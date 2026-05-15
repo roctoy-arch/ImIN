@@ -1,0 +1,89 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { db } from "@/lib/db";
+import { id } from "@instantdb/react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+
+export default function SignUpScreen() {
+  const { eventId } = useLocalSearchParams<{ eventId: string }>();
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function handleSignUp() {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setSaving(true);
+    try {
+      const signupId = id();
+      await db.transact(
+        db.tx.signups[signupId]
+          .update({ name: trimmed, createdAt: Date.now() })
+          .link({ event: eventId })
+      );
+      await AsyncStorage.setItem(`signup:${eventId}`, signupId);
+      setDone(true);
+      setTimeout(() => router.back(), 800);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <KeyboardAvoidingView
+      className="flex-1 bg-white"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <View className="flex-1 p-6 justify-center">
+        {done ? (
+          <View className="items-center py-10">
+            <Text className="text-5xl mb-4">🎉</Text>
+            <Text className="text-2xl font-bold text-gray-900">You're IN!</Text>
+            <Text className="text-gray-500 mt-2">See you there, {name.trim()}.</Text>
+          </View>
+        ) : (
+          <>
+            <Text className="text-2xl font-bold text-gray-900 mb-2">Join this event</Text>
+            <Text className="text-gray-500 mb-6">Enter your name to sign up.</Text>
+            <TextInput
+              className="border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 mb-6"
+              placeholder="Your name"
+              value={name}
+              onChangeText={setName}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleSignUp}
+            />
+            <Pressable
+              onPress={handleSignUp}
+              disabled={saving || !name.trim()}
+              className="bg-black rounded-xl py-4 items-center"
+              style={({ pressed }) => ({
+                opacity: pressed || saving || !name.trim() ? 0.5 : 1,
+              })}
+            >
+              <Text className="text-white font-bold text-lg">
+                {saving ? "Joining..." : "I'm IN"}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => router.back()}
+              className="items-center mt-4 py-2"
+            >
+              <Text className="text-gray-400">Cancel</Text>
+            </Pressable>
+          </>
+        )}
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
