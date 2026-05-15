@@ -5,15 +5,18 @@ import "react-native-reanimated";
 export default function RootLayout() {
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ title: "I'm IN" }} />
-      <Stack.Screen name="room/[slug]" options={{ title: "Room" }} />
-      <Stack.Screen name="event/[id]" options={{ title: "Event" }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="room/[slug]" options={{ headerLargeTitle: true }} />
+      <Stack.Screen name="event/[id]" options={{ headerLargeTitle: true }} />
       <Stack.Screen
         name="sign-up/[eventId]"
         options={{ presentation: "modal", title: "Join Event" }}
       />
       <Stack.Screen name="admin/login" options={{ headerShown: false }} />
-      <Stack.Screen name="admin/index" options={{ title: "Dashboard" }} />
+      <Stack.Screen
+        name="admin/index"
+        options={{ title: "Dashboard" }}
+      />
     </Stack>
   );
 }

@@ -3,7 +3,7 @@ import { AppSchema } from "@/instant.schema";
 import { InstaQLEntity, id } from "@instantdb/react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -375,11 +375,15 @@ export default function EventDetailScreen() {
 
   return (
     <>
+      <Stack.Screen options={{ title: event.title }} />
       <KeyboardAvoidingView
         className="flex-1 bg-gray-50"
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <ScrollView keyboardShouldPersistTaps="handled">
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentInsetAdjustmentBehavior="automatic"
+        >
           <View className="p-5">
             {/* Event info */}
             <Text className="text-2xl font-bold text-gray-900">{event.title}</Text>

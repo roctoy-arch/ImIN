@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { AppSchema } from "@/instant.schema";
 import { InstaQLEntity } from "@instantdb/react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -19,11 +19,16 @@ type RoomWithEvents = InstaQLEntity<
 >;
 type EventWithSignups = InstaQLEntity<AppSchema, "events", { signups: {} }>;
 
-function formatDate(epoch: number) {
+function formatDay(epoch: number) {
   return new Date(epoch).toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
+  });
+}
+
+function formatTime(epoch: number) {
+  return new Date(epoch).toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -36,21 +41,43 @@ function EventCard({ event }: { event: EventWithSignups }) {
   return (
     <Pressable
       onPress={() => router.push(`/event/${event.id}`)}
-      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+      style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
     >
-      <View className="bg-white rounded-xl p-4 mb-3 border border-gray-100">
-        <Text className="text-lg font-bold text-gray-900">{event.title}</Text>
-        <Text className="text-sm text-gray-500 mt-1">{formatDate(event.date)}</Text>
-        {event.location ? (
-          <Text className="text-sm text-gray-500">{event.location}</Text>
-        ) : null}
-        <View className="flex-row mt-3">
-          <View className="bg-green-100 px-3 py-1 rounded-full">
-            <Text className="text-green-700 text-sm font-medium">
-              {count} {count === 1 ? "person" : "people"} in
-            </Text>
+      <View
+        className="bg-white rounded-2xl p-4 mb-3"
+        style={{
+          shadowColor: "#000",
+          shadowOpacity: 0.06,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 2 },
+          elevation: 2,
+        }}
+      >
+        {/* Title + count badge */}
+        <View className="flex-row items-start justify-between mb-2">
+          <Text
+            className="text-base font-bold text-gray-900 flex-1 mr-3"
+            numberOfLines={2}
+          >
+            {event.title}
+          </Text>
+          <View className="bg-black rounded-full px-2.5 py-1 mt-0.5">
+            <Text className="text-white text-xs font-semibold">{count}</Text>
           </View>
         </View>
+
+        {/* Date row */}
+        <View className="flex-row items-center">
+          <Text className="text-sm text-gray-500">{formatDay(event.date)}</Text>
+          <Text className="text-gray-300 mx-1.5">·</Text>
+          <Text className="text-sm font-medium text-gray-500">
+            {formatTime(event.date)}
+          </Text>
+        </View>
+
+        {event.location ? (
+          <Text className="text-xs text-gray-400 mt-1">{event.location}</Text>
+        ) : null}
       </View>
     </Pressable>
   );
@@ -116,44 +143,46 @@ export default function RoomScreen() {
     (a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0)
   )[0];
 
-  // Show banner again whenever a new announcement arrives
   const showBanner = !!latestAnn && !dismissed;
 
   return (
-    <View className="flex-1 bg-gray-50">
-      {/* Room header */}
-      <View className="bg-white px-5 pt-4 pb-4 border-b border-gray-100">
-        <Text className="text-2xl font-bold text-gray-900">{room.name}</Text>
-        <Text className="text-sm text-gray-400 mt-0.5">{slug}</Text>
-      </View>
-
-      {/* Announcement banner */}
-      {showBanner && (
-        <View className="mx-4 mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex-row items-start">
-          <Text className="text-amber-500 mr-2 mt-0.5">📢</Text>
-          <Text className="flex-1 text-amber-800 text-sm leading-relaxed">
-            {latestAnn.message}
-          </Text>
-          <Pressable
-            onPress={() => setDismissed(true)}
-            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-          >
-            <Text className="text-amber-400 ml-2 font-bold text-base">✕</Text>
-          </Pressable>
-        </View>
-      )}
-
+    <>
+      <Stack.Screen options={{ title: room.name }} />
       <FlatList
         data={events}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <EventCard event={item} />}
-        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+        contentInsetAdjustmentBehavior="automatic"
+        style={{ flex: 1, backgroundColor: "#f9fafb" }}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingTop: 8,
+          paddingBottom: 40,
+        }}
+        ListHeaderComponent={
+          showBanner ? (
+            <View className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-3 flex-row items-start">
+              <Text className="text-amber-500 mr-2 mt-0.5">📢</Text>
+              <Text className="flex-1 text-amber-800 text-sm leading-relaxed">
+                {latestAnn.message}
+              </Text>
+              <Pressable
+                onPress={() => setDismissed(true)}
+                style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+              >
+                <Text className="text-amber-400 ml-2 font-bold text-base">✕</Text>
+              </Pressable>
+            </View>
+          ) : null
+        }
         ListEmptyComponent={
           <View className="items-center justify-center py-20">
-            <Text className="text-gray-400 text-base">No events scheduled yet.</Text>
+            <Text className="text-gray-400 text-base">
+              No events scheduled yet.
+            </Text>
           </View>
         }
       />
-    </View>
+    </>
   );
 }
