@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { db } from "@/lib/db";
 import { id } from "@instantdb/react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -39,6 +39,20 @@ export default function SignUpScreen() {
   }
 
   return (
+    <>
+    <Stack.Screen
+      options={{
+        headerLeft: () => (
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+          >
+            <Text style={{ fontSize: 16, color: "#6b7280" }}>Cancel</Text>
+          </Pressable>
+        ),
+      }}
+    />
     <KeyboardAvoidingView
       className="flex-1 bg-white"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -85,5 +99,6 @@ export default function SignUpScreen() {
         )}
       </View>
     </KeyboardAvoidingView>
+    </>
   );
 }

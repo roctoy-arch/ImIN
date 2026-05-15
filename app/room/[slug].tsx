@@ -147,7 +147,20 @@ export default function RoomScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: room.name }} />
+      <Stack.Screen
+        options={{
+          title: room.name,
+          headerLeft: () => (
+            <Pressable
+              onPress={() => router.back()}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+            >
+              <Text style={{ fontSize: 16, color: "#111827" }}>← Home</Text>
+            </Pressable>
+          ),
+        }}
+      />
       <FlatList
         data={events}
         keyExtractor={(item) => item.id}

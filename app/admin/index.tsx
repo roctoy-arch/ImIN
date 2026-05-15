@@ -4,7 +4,7 @@ import { id, InstaQLEntity } from "@instantdb/react-native";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -869,6 +869,21 @@ export default function AdminDashboardScreen() {
   const rooms = (data?.rooms ?? []) as RoomWithEvents[];
 
   return (
+    <>
+    <Stack.Screen
+      options={{
+        title: "Dashboard",
+        headerLeft: () => (
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+          >
+            <Text style={{ fontSize: 16, color: "#111827" }}>← Back</Text>
+          </Pressable>
+        ),
+      }}
+    />
     <ScrollView className="flex-1 bg-gray-50">
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
@@ -895,6 +910,7 @@ export default function AdminDashboardScreen() {
 
       <View className="h-10" />
     </ScrollView>
+    </>
   );
 }
 

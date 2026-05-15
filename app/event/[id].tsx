@@ -375,7 +375,20 @@ export default function EventDetailScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: event.title }} />
+      <Stack.Screen
+        options={{
+          title: event.title,
+          headerLeft: () => (
+            <Pressable
+              onPress={() => router.back()}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+            >
+              <Text style={{ fontSize: 16, color: "#111827" }}>← Back to Room</Text>
+            </Pressable>
+          ),
+        }}
+      />
       <KeyboardAvoidingView
         className="flex-1 bg-gray-50"
         behavior={Platform.OS === "ios" ? "padding" : "height"}
