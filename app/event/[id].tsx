@@ -1,9 +1,11 @@
 import { db } from "@/lib/db";
+import { APP_URL } from "@/constants/config";
 import { AppSchema } from "@/instant.schema";
 import { InstaQLEntity, id } from "@instantdb/react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import Head from "expo-router/head";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -34,11 +36,17 @@ type EventDetail = InstaQLEntity<
 >;
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
+const EFFECTIVE_WIDTH = Math.min(SCREEN_WIDTH, 768);
 const GALLERY_PADDING = 20;
 const TILE_GAP = 4;
 const TILE_SIZE = Math.floor(
-  (SCREEN_WIDTH - GALLERY_PADDING * 2 - TILE_GAP * 2) / 3
+  (EFFECTIVE_WIDTH - GALLERY_PADDING * 2 - TILE_GAP * 2) / 3
 );
+
+const webContentStyle =
+  Platform.OS === "web"
+    ? ({ maxWidth: 768, alignSelf: "center" as const, width: "100%" as const } as const)
+    : undefined;
 
 function formatDate(epoch: number) {
   return new Date(epoch).toLocaleDateString("en-US", {
@@ -375,6 +383,17 @@ export default function EventDetailScreen() {
 
   return (
     <>
+      <Head>
+        <meta property="og:title" content={`${event.title} – I'm IN`} />
+        <meta
+          property="og:description"
+          content={event.description ?? `Sign up for ${event.title}.`}
+        />
+        <meta
+          property="og:url"
+          content={`${APP_URL}/event/${event.id}`}
+        />
+      </Head>
       <Stack.Screen
         options={{
           title: event.title,
@@ -396,6 +415,7 @@ export default function EventDetailScreen() {
         <ScrollView
           keyboardShouldPersistTaps="handled"
           contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={webContentStyle}
         >
           <View className="p-5">
             {/* Event info */}

@@ -1,11 +1,18 @@
 import { useRouter } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 
 export default function HomeScreen() {
   const router = useRouter();
 
   return (
-    <View className="flex-1 bg-white">
+    <View
+      className="flex-1 bg-white"
+      style={
+        Platform.OS === "web"
+          ? { maxWidth: 768, alignSelf: "center", width: "100%" }
+          : undefined
+      }
+    >
       {/* Hero text — bottom-aligned in the top half */}
       <View className="flex-1 px-6 justify-end pb-10">
         <Text

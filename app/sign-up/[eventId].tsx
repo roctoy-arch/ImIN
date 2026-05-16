@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { db } from "@/lib/db";
 import { id } from "@instantdb/react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -18,11 +18,19 @@ export default function SignUpScreen() {
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem("savedName").then((saved) => {
+      if (saved) setName(saved);
+    });
+  }, []);
 
   async function handleSignUp() {
     const trimmed = name.trim();
     if (!trimmed) return;
     setSaving(true);
+    setError(null);
     try {
       const signupId = id();
       await db.transact(
@@ -31,8 +39,11 @@ export default function SignUpScreen() {
           .link({ event: eventId })
       );
       await AsyncStorage.setItem(`signup:${eventId}`, signupId);
+      await AsyncStorage.setItem("savedName", trimmed);
       setDone(true);
       setTimeout(() => router.back(), 800);
+    } catch {
+      setError("Couldn't save your signup. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -89,6 +100,11 @@ export default function SignUpScreen() {
                 {saving ? "Joining..." : "I'm IN"}
               </Text>
             </Pressable>
+            {error ? (
+              <Text className="text-red-500 text-sm text-center mt-3">
+                {error}
+              </Text>
+            ) : null}
             <Pressable
               onPress={() => router.back()}
               className="items-center mt-4 py-2"

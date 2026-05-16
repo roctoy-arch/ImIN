@@ -1,15 +1,23 @@
 import { db } from "@/lib/db";
+import { APP_URL } from "@/constants/config";
 import { AppSchema } from "@/instant.schema";
 import { InstaQLEntity } from "@instantdb/react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import Head from "expo-router/head";
 import { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Platform,
   Pressable,
   Text,
   View,
 } from "react-native";
+
+const webContentStyle =
+  Platform.OS === "web"
+    ? ({ maxWidth: 768, alignSelf: "center" as const, width: "100%" as const } as const)
+    : undefined;
 
 type Announcement = InstaQLEntity<AppSchema, "announcements">;
 type RoomWithEvents = InstaQLEntity<
@@ -147,6 +155,17 @@ export default function RoomScreen() {
 
   return (
     <>
+      <Head>
+        <meta property="og:title" content={`${room.name} – I'm IN`} />
+        <meta
+          property="og:description"
+          content={`Sign up for events at ${room.name}.`}
+        />
+        <meta
+          property="og:url"
+          content={`${APP_URL}/room/${room.slug}`}
+        />
+      </Head>
       <Stack.Screen
         options={{
           title: room.name,
@@ -171,6 +190,7 @@ export default function RoomScreen() {
           paddingHorizontal: 16,
           paddingTop: 8,
           paddingBottom: 40,
+          ...(webContentStyle ?? {}),
         }}
         ListHeaderComponent={
           showBanner ? (

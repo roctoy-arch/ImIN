@@ -22,6 +22,7 @@ import {
   View,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
+import { APP_URL } from "@/constants/config";
 
 type RoomWithEvents = InstaQLEntity<
   AppSchema,
@@ -607,7 +608,7 @@ function RoomCard({
   const [postingAnn, setPostingAnn] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const roomUrl = `imIN.app/room/${room.slug}`;
+  const roomUrl = `${APP_URL}/room/${room.slug}`;
 
   async function handleCopyRoomLink() {
     await Clipboard.setStringAsync(roomUrl);
@@ -622,7 +623,7 @@ function RoomCard({
   }
 
   async function handleShareEvent(event: EventWithSignups) {
-    const eventUrl = `imIN.app/room/${room.slug}/event/${event.id}`;
+    const eventUrl = `${APP_URL}/event/${event.id}`;
     try {
       await Share.share({ message: `Join ${event.title} on I'm IN! 👇 ${eventUrl}` });
     } catch {}
@@ -884,7 +885,14 @@ export default function AdminDashboardScreen() {
         ),
       }}
     />
-    <ScrollView className="flex-1 bg-gray-50">
+    <ScrollView
+      className="flex-1 bg-gray-50"
+      contentContainerStyle={
+        Platform.OS === "web"
+          ? { maxWidth: 768, alignSelf: "center", width: "100%" }
+          : undefined
+      }
+    >
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
         <Text className="text-sm text-gray-500">{user.email}</Text>
