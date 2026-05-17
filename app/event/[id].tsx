@@ -38,15 +38,45 @@ type EventDetail = InstaQLEntity<
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const EFFECTIVE_WIDTH = Math.min(SCREEN_WIDTH, 768);
 const GALLERY_PADDING = 20;
-const TILE_GAP = 4;
+const TILE_GAP = 8;
 const TILE_SIZE = Math.floor(
-  (EFFECTIVE_WIDTH - GALLERY_PADDING * 2 - TILE_GAP * 2) / 3
+  (EFFECTIVE_WIDTH - GALLERY_PADDING * 2 - TILE_GAP) / 2
 );
 
 const webContentStyle =
   Platform.OS === "web"
     ? ({ maxWidth: 768, alignSelf: "center" as const, width: "100%" as const } as const)
     : undefined;
+
+const CARD_SHADOW = {
+  shadowColor: "#000",
+  shadowOpacity: 0.07,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 3 },
+  elevation: 3,
+} as const;
+
+const AVATAR_COLORS = [
+  "#6366f1", "#8b5cf6", "#ec4899", "#f43f5e",
+  "#f97316", "#eab308", "#22c55e", "#14b8a6",
+  "#06b6d4", "#3b82f6",
+];
+
+function getAvatarColor(name: string): string {
+  let h = 0;
+  for (const c of name) h = c.charCodeAt(0) + ((h << 5) - h);
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+}
+
+function getInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((p) => p[0] ?? "")
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
 
 function formatDate(epoch: number) {
   return new Date(epoch).toLocaleDateString("en-US", {
@@ -154,6 +184,16 @@ function EditEventModal({
     }
   }
 
+  const inputStyle = {
+    backgroundColor: "#F5F5F5",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: "#0A0A0A",
+    marginBottom: 16,
+  };
+
   return (
     <Modal visible={visible} animationType="slide" transparent statusBarTranslucent>
       <KeyboardAvoidingView
@@ -167,43 +207,57 @@ function EditEventModal({
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.sheetContent}
           >
-            <Text className="text-xl font-bold text-gray-900 mb-4">Edit Event</Text>
+            <Text style={{ fontSize: 22, fontWeight: "800", color: "#0A0A0A", marginBottom: 24 }}>
+              Edit Event
+            </Text>
+
+            <Text style={styles.label}>Title</Text>
             <TextInput
-              className="border border-gray-200 rounded-lg px-3 py-3 mb-3 text-base text-gray-900"
-              placeholder="Title *"
+              style={inputStyle}
+              placeholder="Event title"
               value={title}
               onChangeText={setTitle}
             />
+
+            <Text style={styles.label}>Description</Text>
             <TextInput
-              className="border border-gray-200 rounded-lg px-3 py-3 mb-3 text-base text-gray-900"
-              placeholder="Description"
+              style={[inputStyle, { minHeight: 72 }]}
+              placeholder="Optional description"
               value={description}
               onChangeText={setDescription}
               multiline
             />
+
+            <Text style={styles.label}>Location</Text>
             <TextInput
-              className="border border-gray-200 rounded-lg px-3 py-3 mb-4 text-base text-gray-900"
-              placeholder="Location"
+              style={inputStyle}
+              placeholder="Optional location"
               value={location}
               onChangeText={setLocation}
             />
-            <Text className="text-sm font-medium text-gray-700 mb-1">Date & time</Text>
+
+            <Text style={styles.label}>Date & time</Text>
             {Platform.OS === "ios" ? (
               <DateTimePicker
                 value={eventDate}
                 mode="datetime"
                 display="spinner"
                 onChange={onPickerChange}
-                style={{ marginBottom: 8 }}
-                textColor="#111827"
+                style={{ marginBottom: 16 }}
+                textColor="#0A0A0A"
               />
             ) : (
               <>
                 <Pressable
                   onPress={() => setAndroidStep("date")}
-                  className="border border-gray-200 rounded-lg px-3 py-3 mb-4"
+                  style={{
+                    backgroundColor: "#F5F5F5",
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 16,
+                  }}
                 >
-                  <Text className="text-base text-gray-900">
+                  <Text style={{ fontSize: 16, color: "#0A0A0A" }}>
                     {eventDate.toLocaleString()}
                   </Text>
                 </Pressable>
@@ -217,20 +271,29 @@ function EditEventModal({
                 )}
               </>
             )}
+
             <Pressable
               onPress={handleSave}
               disabled={saving || !title.trim()}
-              className="bg-black rounded-xl py-4 items-center mb-3 mt-2"
               style={({ pressed }) => ({
+                backgroundColor: "#0A0A0A",
+                borderRadius: 50,
+                paddingVertical: 18,
+                alignItems: "center",
+                marginTop: 8,
+                transform: [{ scale: pressed ? 0.97 : 1 }],
                 opacity: pressed || saving || !title.trim() ? 0.5 : 1,
               })}
             >
-              <Text className="text-white font-bold text-base">
+              <Text style={{ color: "white", fontWeight: "700", fontSize: 17 }}>
                 {saving ? "Saving..." : "Save Changes"}
               </Text>
             </Pressable>
-            <Pressable onPress={onClose} className="items-center py-2">
-              <Text className="text-gray-500">Cancel</Text>
+            <Pressable
+              onPress={onClose}
+              style={{ alignItems: "center", paddingVertical: 12, marginTop: 4 }}
+            >
+              <Text style={{ color: "#6B7280", fontSize: 15 }}>Cancel</Text>
             </Pressable>
           </ScrollView>
         </View>
@@ -274,7 +337,6 @@ export default function EventDetailScreen() {
   const comments = (event?.comments ?? []) as Comment[];
   const isAdmin = !!user && event?.room?.admin?.id === user.id;
 
-  // Clear stale signup reference if it was deleted externally
   useEffect(() => {
     if (!mySignupId || !event) return;
     const still = signups.some((s) => s.id === mySignupId);
@@ -359,27 +421,37 @@ export default function EventDetailScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" color="#000" />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "white" }}>
+        <ActivityIndicator size="large" color="#0A0A0A" />
       </View>
     );
   }
 
   if (error) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50 p-6">
-        <Text className="text-red-500 text-center">{error.message}</Text>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "white", padding: 24 }}>
+        <Text style={{ color: "#EF4444", textAlign: "center" }}>{error.message}</Text>
       </View>
     );
   }
 
   if (!event) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <Text className="text-gray-400">Event not found.</Text>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "white" }}>
+        <Text style={{ color: "#9CA3AF" }}>Event not found.</Text>
       </View>
     );
   }
+
+  const commentInputStyle = {
+    backgroundColor: "#F5F5F5",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: "#0A0A0A",
+    marginBottom: 12,
+  };
 
   return (
     <>
@@ -389,10 +461,7 @@ export default function EventDetailScreen() {
           property="og:description"
           content={event.description ?? `Sign up for ${event.title}.`}
         />
-        <meta
-          property="og:url"
-          content={`${APP_URL}/event/${event.id}`}
-        />
+        <meta property="og:url" content={`${APP_URL}/event/${event.id}`} />
       </Head>
       <Stack.Screen
         options={{
@@ -405,17 +474,17 @@ export default function EventDetailScreen() {
                 opacity: pressed ? 0.5 : 1,
                 flexDirection: "row" as const,
                 alignItems: "center" as const,
-                gap: 2,
+                gap: 4,
               })}
             >
-              <Text style={{ fontSize: 22, color: "#111827", lineHeight: 26 }}>‹</Text>
-              <Text style={{ fontSize: 16, color: "#111827", fontWeight: "500" }}>Back</Text>
+              <Text style={{ fontSize: 20, color: "#0A0A0A" }}>←</Text>
+              <Text style={{ fontSize: 16, color: "#0A0A0A", fontWeight: "500" }}>Back</Text>
             </Pressable>
           ),
         }}
       />
       <KeyboardAvoidingView
-        className="flex-1 bg-gray-50"
+        style={{ flex: 1, backgroundColor: "white" }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView
@@ -423,33 +492,53 @@ export default function EventDetailScreen() {
           contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={webContentStyle}
         >
-          <View className="p-5">
+          <View style={{ padding: 20 }}>
             {/* Event info */}
-            <Text className="text-2xl font-bold text-gray-900">{event.title}</Text>
-            <Text className="text-sm text-gray-500 mt-1">{formatDate(event.date)}</Text>
+            <Text style={{ fontSize: 28, fontWeight: "800", color: "#0A0A0A", marginBottom: 10 }}>
+              {event.title}
+            </Text>
+            <Text style={{ fontSize: 15, color: "#6B7280", marginBottom: 4 }}>
+              📅 {formatDate(event.date)}
+            </Text>
             {event.location ? (
-              <Text className="text-sm text-gray-500">{event.location}</Text>
+              <Text style={{ fontSize: 15, color: "#6B7280", marginBottom: 4 }}>
+                📍 {event.location}
+              </Text>
             ) : null}
             {event.description ? (
-              <Text className="text-base text-gray-700 mt-3">{event.description}</Text>
+              <Text style={{ fontSize: 15, color: "#374151", marginTop: 12, lineHeight: 22 }}>
+                {event.description}
+              </Text>
             ) : null}
 
             {/* Admin controls */}
             {isAdmin && (
-              <View className="flex-row gap-3 mt-4">
+              <View style={{ flexDirection: "row", gap: 12, marginTop: 16 }}>
                 <Pressable
                   onPress={() => setShowEdit(true)}
-                  className="flex-1 border border-gray-200 rounded-xl py-3 items-center bg-white"
-                  style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                  style={({ pressed }) => ({
+                    flex: 1,
+                    backgroundColor: "#F5F5F5",
+                    borderRadius: 16,
+                    paddingVertical: 14,
+                    alignItems: "center",
+                    transform: [{ scale: pressed ? 0.97 : 1 }],
+                  })}
                 >
-                  <Text className="text-gray-900 font-medium">Edit</Text>
+                  <Text style={{ color: "#0A0A0A", fontWeight: "600" }}>Edit</Text>
                 </Pressable>
                 <Pressable
                   onPress={handleDelete}
-                  className="flex-1 border border-red-200 rounded-xl py-3 items-center bg-white"
-                  style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                  style={({ pressed }) => ({
+                    flex: 1,
+                    backgroundColor: "#FEF2F2",
+                    borderRadius: 16,
+                    paddingVertical: 14,
+                    alignItems: "center",
+                    transform: [{ scale: pressed ? 0.97 : 1 }],
+                  })}
                 >
-                  <Text className="text-red-500 font-medium">Delete</Text>
+                  <Text style={{ color: "#EF4444", fontWeight: "600" }}>Delete</Text>
                 </Pressable>
               </View>
             )}
@@ -458,66 +547,98 @@ export default function EventDetailScreen() {
             {mySignupId ? (
               <Pressable
                 onPress={handleCancelSignup}
-                className="bg-red-500 rounded-xl py-4 items-center mt-4"
-                style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+                style={({ pressed }) => ({
+                  backgroundColor: "#EF4444",
+                  borderRadius: 50,
+                  paddingVertical: 18,
+                  alignItems: "center",
+                  marginTop: 20,
+                  transform: [{ scale: pressed ? 0.97 : 1 }],
+                })}
               >
-                <Text className="text-white font-bold text-base">I'm OUT</Text>
+                <Text style={{ color: "white", fontWeight: "700", fontSize: 17 }}>I'm OUT</Text>
               </Pressable>
             ) : (
               <Pressable
                 onPress={() => router.push(`/sign-up/${eventId}`)}
-                className="bg-black rounded-xl py-4 items-center mt-4"
-                style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+                style={({ pressed }) => ({
+                  backgroundColor: "#0A0A0A",
+                  borderRadius: 50,
+                  paddingVertical: 18,
+                  alignItems: "center",
+                  marginTop: 20,
+                  transform: [{ scale: pressed ? 0.97 : 1 }],
+                })}
               >
-                <Text className="text-white font-bold text-base">I'm IN</Text>
+                <Text style={{ color: "white", fontWeight: "700", fontSize: 17 }}>I'm IN</Text>
               </Pressable>
             )}
 
-            {/* Signups */}
-            <View className="mt-6">
-              <Text className="text-base font-semibold text-gray-900 mb-2">
+            {/* Who's in — avatar circles */}
+            <View style={{ marginTop: 32 }}>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: "#0A0A0A", marginBottom: 12 }}>
                 Who's in ({signups.length})
               </Text>
               {signups.length === 0 ? (
-                <Text className="text-gray-400 text-sm">Be the first to sign up!</Text>
+                <Text style={{ color: "#9CA3AF", fontSize: 14 }}>Be the first to sign up!</Text>
               ) : (
-                signups.map((s) => (
-                  <View
-                    key={s.id}
-                    className="flex-row items-center justify-between py-2 border-b border-gray-100"
-                  >
-                    <Text className="text-gray-900 font-medium">{s.name}</Text>
-                    <Text className="text-gray-400 text-xs">
-                      {formatShortTime(s.createdAt)}
-                    </Text>
-                  </View>
-                ))
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+                  {signups.map((s) => (
+                    <View key={s.id} style={{ alignItems: "center", gap: 4 }}>
+                      <View
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: 24,
+                          backgroundColor: getAvatarColor(s.name),
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Text style={{ color: "white", fontSize: 15, fontWeight: "700" }}>
+                          {getInitials(s.name)}
+                        </Text>
+                      </View>
+                      <Text
+                        style={{ fontSize: 11, color: "#6B7280", maxWidth: 52, textAlign: "center" }}
+                        numberOfLines={1}
+                      >
+                        {s.name.split(" ")[0]}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
               )}
             </View>
 
             {/* Photo gallery */}
-            <View className="mt-6 mb-6">
-              <View className="flex-row items-center justify-between mb-3">
-                <Text className="text-base font-semibold text-gray-900">
+            <View style={{ marginTop: 32 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <Text style={{ fontSize: 16, fontWeight: "700", color: "#0A0A0A" }}>
                   Photos ({photos.length})
                 </Text>
                 <Pressable
                   onPress={handleSharePhoto}
                   disabled={uploading}
-                  style={({ pressed }) => ({
-                    opacity: pressed || uploading ? 0.5 : 1,
-                  })}
+                  style={({ pressed }) => ({ opacity: pressed || uploading ? 0.5 : 1 })}
                 >
-                  <Text className="text-black font-medium text-sm">
-                    {uploading ? "Uploading..." : "+ Share Photo"}
+                  <Text style={{ color: "#0A0A0A", fontWeight: "600", fontSize: 14 }}>
+                    {uploading ? "Uploading..." : "+ Add Photo"}
                   </Text>
                 </Pressable>
               </View>
 
               {photos.length === 0 ? (
-                <View className="py-8 items-center bg-gray-100 rounded-xl">
-                  <Text className="text-gray-400 text-sm">No photos yet.</Text>
-                  <Text className="text-gray-400 text-xs mt-1">
+                <View
+                  style={{
+                    paddingVertical: 32,
+                    alignItems: "center",
+                    backgroundColor: "#F5F5F5",
+                    borderRadius: 16,
+                  }}
+                >
+                  <Text style={{ color: "#9CA3AF", fontSize: 14 }}>No photos yet.</Text>
+                  <Text style={{ color: "#9CA3AF", fontSize: 13, marginTop: 4 }}>
                     Be the first to share one!
                   </Text>
                 </View>
@@ -542,30 +663,50 @@ export default function EventDetailScreen() {
             </View>
 
             {/* Comments */}
-            <View className="mt-2 mb-4">
-              <Text className="text-base font-semibold text-gray-900 mb-3">
+            <View style={{ marginTop: 32, marginBottom: 16 }}>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: "#0A0A0A", marginBottom: 12 }}>
                 Comments ({comments.length})
               </Text>
 
               {comments.length === 0 ? (
-                <Text className="text-gray-400 text-sm mb-4">
+                <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 16 }}>
                   No comments yet. Be the first!
                 </Text>
               ) : (
                 comments.map((c) => (
                   <View
                     key={c.id}
-                    className="bg-white rounded-xl p-3 mb-2 border border-gray-100"
+                    style={{
+                      backgroundColor: "white",
+                      borderRadius: 16,
+                      padding: 14,
+                      marginBottom: 8,
+                      ...CARD_SHADOW,
+                    }}
                   >
-                    <View className="flex-row items-center justify-between mb-1">
-                      <Text className="text-gray-900 font-semibold text-sm">
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                      <View
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: 14,
+                          backgroundColor: getAvatarColor(c.name),
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Text style={{ color: "white", fontSize: 11, fontWeight: "700" }}>
+                          {getInitials(c.name)}
+                        </Text>
+                      </View>
+                      <Text style={{ fontWeight: "600", fontSize: 13, color: "#0A0A0A" }}>
                         {c.name}
                       </Text>
-                      <Text className="text-gray-400 text-xs">
+                      <Text style={{ fontSize: 11, color: "#9CA3AF", marginLeft: "auto" }}>
                         {formatShortTime(c.createdAt)}
                       </Text>
                     </View>
-                    <Text className="text-gray-700 text-sm leading-relaxed">
+                    <Text style={{ fontSize: 14, color: "#374151", lineHeight: 20, marginLeft: 36 }}>
                       {c.message}
                     </Text>
                   </View>
@@ -573,20 +714,30 @@ export default function EventDetailScreen() {
               )}
 
               {/* Comment form */}
-              <View className="bg-white rounded-xl p-4 border border-gray-100">
-                <Text className="text-sm font-semibold text-gray-700 mb-2">
+              <View
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: 16,
+                  padding: 16,
+                  marginTop: 8,
+                  ...CARD_SHADOW,
+                }}
+              >
+                <Text style={{ fontSize: 14, fontWeight: "700", color: "#0A0A0A", marginBottom: 12 }}>
                   Leave a comment
                 </Text>
+                <Text style={styles.label}>Your name</Text>
                 <TextInput
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 mb-2"
-                  placeholder="Your name"
+                  style={commentInputStyle}
+                  placeholder="e.g. Alex"
                   value={commentName}
                   onChangeText={setCommentName}
                   returnKeyType="next"
                 />
+                <Text style={styles.label}>Message</Text>
                 <TextInput
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 mb-3"
-                  placeholder="Your message"
+                  style={[commentInputStyle, { minHeight: 64 }]}
+                  placeholder="What's on your mind?"
                   value={commentMessage}
                   onChangeText={setCommentMessage}
                   multiline
@@ -596,21 +747,20 @@ export default function EventDetailScreen() {
                 />
                 <Pressable
                   onPress={handlePostComment}
-                  disabled={
-                    postingComment || !commentName.trim() || !commentMessage.trim()
-                  }
-                  className="bg-black rounded-xl py-3 items-center"
+                  disabled={postingComment || !commentName.trim() || !commentMessage.trim()}
                   style={({ pressed }) => ({
+                    backgroundColor: "#0A0A0A",
+                    borderRadius: 50,
+                    paddingVertical: 14,
+                    alignItems: "center",
+                    transform: [{ scale: pressed ? 0.97 : 1 }],
                     opacity:
-                      pressed ||
-                      postingComment ||
-                      !commentName.trim() ||
-                      !commentMessage.trim()
+                      pressed || postingComment || !commentName.trim() || !commentMessage.trim()
                         ? 0.5
                         : 1,
                   })}
                 >
-                  <Text className="text-white font-bold text-sm">
+                  <Text style={{ color: "white", fontWeight: "700", fontSize: 15 }}>
                     {postingComment ? "Posting..." : "Post Comment"}
                   </Text>
                 </Pressable>
@@ -633,12 +783,18 @@ export default function EventDetailScreen() {
 }
 
 const styles = StyleSheet.create({
+  label: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: 6,
+  },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: TILE_GAP },
   tile: {
     width: TILE_SIZE,
     height: TILE_SIZE,
-    borderRadius: 8,
-    backgroundColor: "#e5e7eb",
+    borderRadius: 12,
+    backgroundColor: "#E5E7EB",
   },
   lightboxBg: {
     flex: 1,
@@ -666,8 +822,8 @@ const styles = StyleSheet.create({
   },
   sheet: {
     backgroundColor: "white",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
   sheetContent: { padding: 24, paddingBottom: 48 },
 });

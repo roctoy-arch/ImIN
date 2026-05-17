@@ -1,39 +1,47 @@
 import { useRouter } from "expo-router";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 export default function HomeScreen() {
   const router = useRouter();
 
   return (
-    <View
-      className="flex-1 bg-white"
-      style={
-        Platform.OS === "web"
-          ? { maxWidth: 768, alignSelf: "center", width: "100%" }
-          : undefined
-      }
-    >
-      {/* Hero text — bottom-aligned in the top half */}
-      <View className="flex-1 px-6 justify-end pb-10">
+    <View className="flex-1 bg-white">
+      {/* Centered title + subtitle */}
+      <View className="flex-1 items-center justify-center px-6">
         <Text
-          className="font-black text-gray-900 leading-none mb-4"
-          style={{ fontSize: 80 }}
+          style={{
+            fontSize: 48,
+            fontWeight: "900",
+            color: "#0A0A0A",
+            textAlign: "center",
+            lineHeight: 52,
+          }}
         >
-          {"I'm\nIN"}
+          {"I'm IN"}
         </Text>
-        <Text className="text-base text-gray-400 leading-relaxed">
+        <Text
+          style={{
+            fontSize: 16,
+            color: "#9CA3AF",
+            textAlign: "center",
+            marginTop: 12,
+            lineHeight: 24,
+          }}
+        >
           Sign up for your gym's events in seconds.{"\n"}No account needed.
         </Text>
       </View>
 
       {/* Admin link pinned to bottom */}
-      <View className="px-6 pb-14 items-center">
-        <Text className="text-gray-400 text-sm mb-2">Are you an organizer?</Text>
+      <View style={{ paddingBottom: 52, alignItems: "center" }}>
+        <Text style={{ color: "#9CA3AF", fontSize: 13 }}>
+          Are you an organizer?
+        </Text>
         <Pressable
           onPress={() => router.push("/admin")}
-          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, marginTop: 4 })}
         >
-          <Text className="text-gray-900 font-semibold text-sm underline">
+          <Text style={{ color: "#0A0A0A", fontWeight: "600", fontSize: 14 }}>
             Admin Area →
           </Text>
         </Pressable>

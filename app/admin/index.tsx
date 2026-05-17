@@ -112,28 +112,41 @@ function StatsSection({ events }: { events: EventWithSignups[] }) {
       )
     : 0;
 
+  const statCardStyle = {
+    flex: 1,
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 14,
+    alignItems: "center" as const,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  };
+
   return (
-    <View className="px-5 pb-4">
-      <Text className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+    <View style={{ paddingHorizontal: 20, paddingBottom: 16 }}>
+      <Text style={{ fontSize: 12, fontWeight: "600", color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 12 }}>
         Stats
       </Text>
-      <View className="flex-row gap-2">
-        <View className="flex-1 bg-gray-50 rounded-xl p-3 items-center border border-gray-100">
-          <Text className="text-2xl font-bold text-gray-900">{thisWeekSignups}</Text>
-          <Text className="text-xs text-gray-400 text-center mt-0.5">signups{"\n"}this week</Text>
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        <View style={statCardStyle}>
+          <Text style={{ fontSize: 28, fontWeight: "800", color: "#0A0A0A" }}>{thisWeekSignups}</Text>
+          <Text style={{ fontSize: 11, color: "#9CA3AF", textAlign: "center", marginTop: 2 }}>signups{"\n"}this week</Text>
         </View>
-        <View className="flex-1 bg-gray-50 rounded-xl p-3 items-center border border-gray-100">
+        <View style={statCardStyle}>
           <Text
-            className="text-base font-bold text-gray-900 text-center"
+            style={{ fontSize: 15, fontWeight: "700", color: "#0A0A0A", textAlign: "center" }}
             numberOfLines={2}
           >
             {mostPopular?.title ?? "—"}
           </Text>
-          <Text className="text-xs text-gray-400 text-center mt-0.5">most{"\n"}popular</Text>
+          <Text style={{ fontSize: 11, color: "#9CA3AF", textAlign: "center", marginTop: 2 }}>most{"\n"}popular</Text>
         </View>
-        <View className="flex-1 bg-gray-50 rounded-xl p-3 items-center border border-gray-100">
-          <Text className="text-2xl font-bold text-gray-900">{avgAttendance}</Text>
-          <Text className="text-xs text-gray-400 text-center mt-0.5">avg{"\n"}attendance</Text>
+        <View style={statCardStyle}>
+          <Text style={{ fontSize: 28, fontWeight: "800", color: "#0A0A0A" }}>{avgAttendance}</Text>
+          <Text style={{ fontSize: 11, color: "#9CA3AF", textAlign: "center", marginTop: 2 }}>avg{"\n"}attendance</Text>
         </View>
       </View>
     </View>
@@ -294,6 +307,23 @@ function EventModal({
     { label: "Custom", value: "custom" },
   ];
 
+  const modalInputStyle = {
+    backgroundColor: "#F5F5F5",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: "#0A0A0A",
+    marginBottom: 16,
+  };
+
+  const modalInputLabel = {
+    fontSize: 13,
+    fontWeight: "600" as const,
+    color: "#374151",
+    marginBottom: 6,
+  };
+
   return (
     <Modal visible={visible} animationType="slide" transparent statusBarTranslucent>
       <KeyboardAvoidingView
@@ -307,32 +337,35 @@ function EventModal({
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.sheetContent}
           >
-            <Text className="text-xl font-bold text-gray-900 mb-4">
+            <Text style={{ fontSize: 22, fontWeight: "800", color: "#0A0A0A", marginBottom: 24 }}>
               {editEvent ? "Edit Event" : "New Event"}
             </Text>
+            <Text style={modalInputLabel}>Title</Text>
             <TextInput
-              className="border border-gray-200 rounded-lg px-3 py-3 mb-3 text-base text-gray-900"
-              placeholder="Title *"
+              style={modalInputStyle}
+              placeholder="Event title"
               value={title}
               onChangeText={setTitle}
               returnKeyType="next"
             />
+            <Text style={modalInputLabel}>Description</Text>
             <TextInput
-              className="border border-gray-200 rounded-lg px-3 py-3 mb-3 text-base text-gray-900"
-              placeholder="Description"
+              style={[modalInputStyle, { minHeight: 64 }]}
+              placeholder="Optional description"
               value={description}
               onChangeText={setDescription}
               multiline
               numberOfLines={2}
             />
+            <Text style={modalInputLabel}>Location</Text>
             <TextInput
-              className="border border-gray-200 rounded-lg px-3 py-3 mb-4 text-base text-gray-900"
-              placeholder="Location"
+              style={modalInputStyle}
+              placeholder="Optional location"
               value={location}
               onChangeText={setLocation}
               returnKeyType="done"
             />
-            <Text className="text-sm font-medium text-gray-700 mb-1">
+            <Text style={modalInputLabel}>
               Date & time
             </Text>
             {Platform.OS === "web" ? (
@@ -343,12 +376,12 @@ function EventModal({
                   onChange: (e: any) => handleWebDateChange(e.target.value),
                   style: {
                     flex: 1,
-                    border: "1px solid #e5e7eb",
-                    borderRadius: 8,
-                    padding: "12px",
+                    border: "none",
+                    borderRadius: 12,
+                    padding: "14px 16px",
                     fontSize: 16,
-                    color: "#111827",
-                    backgroundColor: "white",
+                    color: "#0A0A0A",
+                    backgroundColor: "#F5F5F5",
                     fontFamily: "inherit",
                     outline: "none",
                     cursor: "pointer",
@@ -361,12 +394,12 @@ function EventModal({
                   onChange: (e: any) => handleWebTimeChange(e.target.value),
                   style: {
                     flex: 1,
-                    border: "1px solid #e5e7eb",
-                    borderRadius: 8,
-                    padding: "12px",
+                    border: "none",
+                    borderRadius: 12,
+                    padding: "14px 16px",
                     fontSize: 16,
-                    color: "#111827",
-                    backgroundColor: "white",
+                    color: "#0A0A0A",
+                    backgroundColor: "#F5F5F5",
                     fontFamily: "inherit",
                     outline: "none",
                     cursor: "pointer",
@@ -381,15 +414,15 @@ function EventModal({
                 display="spinner"
                 onChange={onPickerChange}
                 style={{ marginBottom: 8 }}
-                textColor="#111827"
+                textColor="#0A0A0A"
               />
             ) : (
               <>
                 <Pressable
                   onPress={() => setAndroidStep("date")}
-                  className="border border-gray-200 rounded-lg px-3 py-3 mb-4"
+                  style={{ backgroundColor: "#F5F5F5", borderRadius: 12, padding: 16, marginBottom: 16 }}
                 >
-                  <Text className="text-base text-gray-900">
+                  <Text style={{ fontSize: 16, color: "#0A0A0A" }}>
                     {formatDate(eventDate.getTime())}
                   </Text>
                 </Pressable>
@@ -406,38 +439,40 @@ function EventModal({
 
             {/* Recurring toggle — only on create */}
             {!editEvent && (
-              <View className="mb-4">
-                <View className="flex-row items-center justify-between mb-2">
-                  <Text className="text-sm font-medium text-gray-700">
+              <View style={{ marginBottom: 16 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <Text style={{ fontSize: 14, fontWeight: "600", color: "#374151" }}>
                     Recurring event
                   </Text>
                   <Switch
                     value={isRecurring}
                     onValueChange={setIsRecurring}
-                    trackColor={{ false: "#e5e7eb", true: "#111827" }}
+                    trackColor={{ false: "#E5E7EB", true: "#0A0A0A" }}
                     thumbColor="#ffffff"
                   />
                 </View>
 
                 {isRecurring && (
                   <>
-                    <View className="flex-row gap-2 mb-3">
+                    <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
                       {recurringTypes.map((rt) => (
                         <Pressable
                           key={rt.value}
                           onPress={() => setRecurrenceType(rt.value)}
-                          className={`flex-1 py-2 rounded-lg items-center border ${
-                            recurrenceType === rt.value
-                              ? "bg-black border-black"
-                              : "bg-white border-gray-200"
-                          }`}
+                          style={{
+                            flex: 1,
+                            paddingVertical: 10,
+                            borderRadius: 10,
+                            alignItems: "center",
+                            backgroundColor: recurrenceType === rt.value ? "#0A0A0A" : "#F5F5F5",
+                          }}
                         >
                           <Text
-                            className={`text-sm font-semibold ${
-                              recurrenceType === rt.value
-                                ? "text-white"
-                                : "text-gray-600"
-                            }`}
+                            style={{
+                              fontSize: 14,
+                              fontWeight: "600",
+                              color: recurrenceType === rt.value ? "white" : "#6B7280",
+                            }}
                           >
                             {rt.label}
                           </Text>
@@ -446,23 +481,25 @@ function EventModal({
                     </View>
 
                     {recurrenceType === "custom" && (
-                      <View className="flex-row gap-1.5 mb-3">
+                      <View style={{ flexDirection: "row", gap: 6, marginBottom: 12 }}>
                         {DAY_LABELS.map((label, idx) => (
                           <Pressable
                             key={idx}
                             onPress={() => toggleCustomDay(idx)}
-                            className={`flex-1 py-2 rounded-lg items-center border ${
-                              customDays.includes(idx)
-                                ? "bg-black border-black"
-                                : "bg-white border-gray-200"
-                            }`}
+                            style={{
+                              flex: 1,
+                              paddingVertical: 8,
+                              borderRadius: 8,
+                              alignItems: "center",
+                              backgroundColor: customDays.includes(idx) ? "#0A0A0A" : "#F5F5F5",
+                            }}
                           >
                             <Text
-                              className={`text-xs font-bold ${
-                                customDays.includes(idx)
-                                  ? "text-white"
-                                  : "text-gray-500"
-                              }`}
+                              style={{
+                                fontSize: 12,
+                                fontWeight: "700",
+                                color: customDays.includes(idx) ? "white" : "#9CA3AF",
+                              }}
                             >
                               {label}
                             </Text>
@@ -471,7 +508,7 @@ function EventModal({
                       </View>
                     )}
 
-                    <Text className="text-xs text-gray-400">
+                    <Text style={{ fontSize: 12, color: "#9CA3AF" }}>
                       Will create 4 additional occurrences after the first date.
                     </Text>
                   </>
@@ -482,12 +519,17 @@ function EventModal({
             <Pressable
               onPress={handleSave}
               disabled={saving || !title.trim()}
-              className="bg-black rounded-xl py-4 items-center mb-3 mt-2"
               style={({ pressed }) => ({
+                backgroundColor: "#0A0A0A",
+                borderRadius: 50,
+                paddingVertical: 18,
+                alignItems: "center",
+                marginTop: 8,
+                transform: [{ scale: pressed ? 0.97 : 1 }],
                 opacity: pressed || saving || !title.trim() ? 0.5 : 1,
               })}
             >
-              <Text className="text-white font-bold text-base">
+              <Text style={{ color: "white", fontWeight: "700", fontSize: 17 }}>
                 {saving
                   ? "Saving..."
                   : editEvent
@@ -497,8 +539,8 @@ function EventModal({
                   : "Create Event"}
               </Text>
             </Pressable>
-            <Pressable onPress={onClose} className="items-center py-2">
-              <Text className="text-gray-500">Cancel</Text>
+            <Pressable onPress={onClose} style={{ alignItems: "center", paddingVertical: 12, marginTop: 4 }}>
+              <Text style={{ color: "#6B7280", fontSize: 15 }}>Cancel</Text>
             </Pressable>
           </ScrollView>
         </View>
@@ -548,43 +590,71 @@ function CreateRoomForm({ userId }: { userId: string }) {
     }
   }
 
+  const crInputStyle = {
+    backgroundColor: "#F5F5F5",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: "#0A0A0A",
+    marginBottom: 4,
+  };
+
   return (
-    <View className="bg-white rounded-2xl p-5 mx-4 mt-4 border border-gray-100">
-      <Text className="text-lg font-bold text-gray-900 mb-1">Create Your Room</Text>
-      <Text className="text-gray-500 text-sm mb-4">
+    <View style={{
+      backgroundColor: "white",
+      borderRadius: 20,
+      padding: 20,
+      marginHorizontal: 16,
+      marginTop: 16,
+      shadowColor: "#000",
+      shadowOpacity: 0.07,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 3,
+    }}>
+      <Text style={{ fontSize: 20, fontWeight: "800", color: "#0A0A0A", marginBottom: 4 }}>
+        Create Your Room
+      </Text>
+      <Text style={{ fontSize: 14, color: "#6B7280", marginBottom: 20 }}>
         Members will use your room link to find your events.
       </Text>
+      <Text style={{ fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 }}>Room name</Text>
       <TextInput
-        className="border border-gray-200 rounded-lg px-3 py-3 mb-3 text-base text-gray-900"
-        placeholder="Room name (e.g. GymBox BJJ)"
+        style={[crInputStyle, { marginBottom: 16 }]}
+        placeholder="e.g. GymBox BJJ"
         value={name}
         onChangeText={handleNameChange}
       />
-      <View className="mb-3">
-        <TextInput
-          className="border border-gray-200 rounded-lg px-3 py-3 text-base text-gray-900"
-          placeholder="Room code (e.g. gymbox-bjj)"
-          value={slug}
-          onChangeText={handleSlugChange}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        {slug ? (
-          <Text className="text-gray-400 text-xs mt-1 ml-1">
-            Members visit: /room/{slug}
-          </Text>
-        ) : null}
-      </View>
-      {error ? <Text className="text-red-500 text-sm mb-3">{error}</Text> : null}
+      <Text style={{ fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 }}>Room code</Text>
+      <TextInput
+        style={crInputStyle}
+        placeholder="e.g. gymbox-bjj"
+        value={slug}
+        onChangeText={handleSlugChange}
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+      {slug ? (
+        <Text style={{ fontSize: 12, color: "#9CA3AF", marginTop: 4, marginBottom: 4 }}>
+          Members visit: /room/{slug}
+        </Text>
+      ) : <View style={{ height: 16 }} />}
+      {error ? <Text style={{ color: "#EF4444", fontSize: 14, marginBottom: 12 }}>{error}</Text> : null}
       <Pressable
         onPress={handleCreate}
         disabled={saving || !name.trim() || !slug.trim()}
-        className="bg-black rounded-xl py-4 items-center"
         style={({ pressed }) => ({
+          backgroundColor: "#0A0A0A",
+          borderRadius: 50,
+          paddingVertical: 18,
+          alignItems: "center",
+          marginTop: 8,
+          transform: [{ scale: pressed ? 0.97 : 1 }],
           opacity: pressed || saving || !name.trim() || !slug.trim() ? 0.5 : 1,
         })}
       >
-        <Text className="text-white font-bold text-base">
+        <Text style={{ color: "white", fontWeight: "700", fontSize: 17 }}>
           {saving ? "Creating..." : "Create Room"}
         </Text>
       </Pressable>
@@ -607,45 +677,59 @@ function EventRow({
 }) {
   const count = event.signups?.length ?? 0;
   return (
-    <View className="border-b border-gray-100 py-3">
-      <View className="flex-row items-start justify-between">
-        <View className="flex-1 mr-3">
-          <View className="flex-row items-center gap-1.5">
-            <Text className="text-gray-900 font-semibold">{event.title}</Text>
+    <View style={{
+      backgroundColor: "white",
+      borderRadius: 14,
+      padding: 16,
+      marginBottom: 8,
+      shadowColor: "#000",
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 2,
+    }}>
+      <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <View style={{ flex: 1, marginRight: 12 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
+            <Text style={{ fontSize: 15, fontWeight: "700", color: "#0A0A0A" }}>{event.title}</Text>
             {event.isRecurring && (
-              <View className="bg-blue-100 px-1.5 py-0.5 rounded">
-                <Text className="text-blue-600 text-xs">↺</Text>
+              <View style={{ backgroundColor: "#EEF2FF", borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                <Text style={{ color: "#6366F1", fontSize: 11 }}>↺</Text>
               </View>
             )}
           </View>
-          <Text className="text-gray-400 text-xs mt-0.5">
+          <Text style={{ fontSize: 12, color: "#9CA3AF", marginBottom: 2 }}>
             {formatDate(event.date)}
           </Text>
           {event.location ? (
-            <Text className="text-gray-400 text-xs">{event.location}</Text>
+            <Text style={{ fontSize: 12, color: "#9CA3AF" }}>{event.location}</Text>
           ) : null}
-          <Text className="text-green-600 text-xs mt-1">
-            {count} {count === 1 ? "person" : "people"} in
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}>
+            <View style={{ backgroundColor: "#F5F5F5", borderRadius: 50, paddingHorizontal: 10, paddingVertical: 3 }}>
+              <Text style={{ fontSize: 12, fontWeight: "600", color: "#0A0A0A" }}>
+                {count} {count === 1 ? "in" : "in"}
+              </Text>
+            </View>
+          </View>
         </View>
-        <View className="flex-row gap-3">
+        <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
           <Pressable
             onPress={onEdit}
             style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
           >
-            <Text className="text-gray-600 text-sm font-medium">Edit</Text>
+            <Text style={{ fontSize: 14, fontWeight: "600", color: "#0A0A0A" }}>Edit</Text>
           </Pressable>
           <Pressable
             onPress={onShare}
             style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
           >
-            <Text className="text-gray-400 text-sm font-medium">Share</Text>
+            <Text style={{ fontSize: 14, fontWeight: "600", color: "#6B7280" }}>Share</Text>
           </Pressable>
           <Pressable
             onPress={onDelete}
             style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
           >
-            <Text className="text-red-500 text-sm font-medium">Delete</Text>
+            <Text style={{ fontSize: 14, fontWeight: "600", color: "#EF4444" }}>Delete</Text>
           </Pressable>
         </View>
       </View>
@@ -742,46 +826,79 @@ function RoomCard({
 
   return (
     <>
-      <View className="bg-white rounded-2xl mx-4 mt-4 border border-gray-100 overflow-hidden">
+      <View style={{
+        backgroundColor: "white",
+        borderRadius: 20,
+        marginHorizontal: 16,
+        marginTop: 16,
+        overflow: "hidden",
+        shadowColor: "#000",
+        shadowOpacity: 0.07,
+        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 4,
+      }}>
         {/* Room header */}
-        <View className="p-5 border-b border-gray-100">
+        <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}>
           {/* Name + View row */}
-          <View className="flex-row items-center justify-between mb-3">
-            <View className="flex-1">
-              <Text className="text-xl font-bold text-gray-900">{room.name}</Text>
-              <Text className="text-gray-400 text-sm mt-0.5">{room.slug}</Text>
+          <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 22, fontWeight: "800", color: "#0A0A0A" }}>{room.name}</Text>
+              <Text style={{ fontSize: 13, color: "#9CA3AF", marginTop: 2 }}>{room.slug}</Text>
             </View>
             <Pressable
               onPress={() => router.push(`/room/${room.slug}`)}
-              className="bg-gray-100 px-3 py-1.5 rounded-lg"
-              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+              style={({ pressed }) => ({
+                backgroundColor: "#F5F5F5",
+                borderRadius: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 8,
+                opacity: pressed ? 0.7 : 1,
+              })}
             >
-              <Text className="text-gray-700 text-sm font-medium">View →</Text>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: "#0A0A0A" }}>View →</Text>
             </Pressable>
           </View>
 
           {/* Share section */}
-          <View className="bg-gray-50 rounded-xl px-3 py-2.5">
-            <Text className="text-xs text-gray-400 mb-1">Room link</Text>
-            <Text className="text-sm font-medium text-gray-700 mb-2" numberOfLines={1}>
+          <View style={{ backgroundColor: "#F9FAFB", borderRadius: 14, padding: 14 }}>
+            <Text style={{ fontSize: 11, color: "#9CA3AF", marginBottom: 4, fontWeight: "500" }}>Room link</Text>
+            <Text style={{ fontSize: 14, fontWeight: "500", color: "#374151", marginBottom: 12 }} numberOfLines={1}>
               {roomUrl}
             </Text>
-            <View className="flex-row gap-2">
+            <View style={{ flexDirection: "row", gap: 8 }}>
               <Pressable
                 onPress={handleCopyRoomLink}
-                className="flex-1 bg-white border border-gray-200 rounded-lg py-2 items-center"
-                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  backgroundColor: "white",
+                  borderRadius: 10,
+                  paddingVertical: 10,
+                  alignItems: "center",
+                  opacity: pressed ? 0.7 : 1,
+                  shadowColor: "#000",
+                  shadowOpacity: 0.05,
+                  shadowRadius: 4,
+                  shadowOffset: { width: 0, height: 1 },
+                  elevation: 1,
+                })}
               >
-                <Text className="text-gray-700 text-sm font-medium">
-                  {copied ? "Copied!" : "Copy Link"}
+                <Text style={{ fontSize: 14, fontWeight: "600", color: "#0A0A0A" }}>
+                  {copied ? "Copied ✓" : "Copy Link"}
                 </Text>
               </Pressable>
               <Pressable
                 onPress={handleShareRoom}
-                className="flex-1 bg-black rounded-lg py-2 items-center"
-                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  backgroundColor: "#0A0A0A",
+                  borderRadius: 10,
+                  paddingVertical: 10,
+                  alignItems: "center",
+                  opacity: pressed ? 0.7 : 1,
+                })}
               >
-                <Text className="text-white text-sm font-medium">Share</Text>
+                <Text style={{ fontSize: 14, fontWeight: "600", color: "white" }}>Share</Text>
               </Pressable>
             </View>
           </View>
@@ -789,28 +906,28 @@ function RoomCard({
 
         {/* Stats */}
         {events.length > 0 && (
-          <View className="border-b border-gray-100 pt-4">
+          <View style={{ borderBottomWidth: 1, borderBottomColor: "#F3F4F6", paddingTop: 16 }}>
             <StatsSection events={events} />
           </View>
         )}
 
         {/* Events */}
-        <View className="px-5">
-          <View className="flex-row items-center justify-between pt-4 pb-2">
-            <Text className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+        <View style={{ paddingHorizontal: 20 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingTop: 16, paddingBottom: 8 }}>
+            <Text style={{ fontSize: 12, fontWeight: "600", color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.8 }}>
               Events ({events.length})
             </Text>
             <Pressable
               onPress={openCreate}
               style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
             >
-              <Text className="text-black font-semibold text-sm">+ New</Text>
+              <Text style={{ fontSize: 15, fontWeight: "700", color: "#0A0A0A" }}>+ New</Text>
             </Pressable>
           </View>
 
           {events.length === 0 ? (
-            <View className="py-6 items-center">
-              <Text className="text-gray-400 text-sm">No events yet. Create one!</Text>
+            <View style={{ paddingVertical: 24, alignItems: "center" }}>
+              <Text style={{ fontSize: 14, color: "#9CA3AF" }}>No events yet. Create one!</Text>
             </View>
           ) : (
             events.map((event) => (
@@ -826,15 +943,23 @@ function RoomCard({
         </View>
 
         {/* Announcements */}
-        <View className="px-5 border-t border-gray-100 mt-2">
-          <Text className="text-sm font-semibold text-gray-700 uppercase tracking-wide pt-4 pb-3">
+        <View style={{ paddingHorizontal: 20, borderTopWidth: 1, borderTopColor: "#F3F4F6", marginTop: 8 }}>
+          <Text style={{ fontSize: 12, fontWeight: "600", color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.8, paddingTop: 16, marginBottom: 12 }}>
             Announcements
           </Text>
 
           {/* Post form */}
-          <View className="flex-row gap-2 mb-3">
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
             <TextInput
-              className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900"
+              style={{
+                flex: 1,
+                backgroundColor: "#F5F5F5",
+                borderRadius: 12,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                fontSize: 14,
+                color: "#0A0A0A",
+              }}
               placeholder="Post an announcement..."
               value={announcementText}
               onChangeText={setAnnouncementText}
@@ -844,42 +969,55 @@ function RoomCard({
             <Pressable
               onPress={handlePostAnnouncement}
               disabled={postingAnn || !announcementText.trim()}
-              className="bg-black rounded-lg px-4 items-center justify-center"
               style={({ pressed }) => ({
-                opacity:
-                  pressed || postingAnn || !announcementText.trim() ? 0.5 : 1,
+                backgroundColor: "#0A0A0A",
+                borderRadius: 50,
+                paddingHorizontal: 18,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed || postingAnn || !announcementText.trim() ? 0.5 : 1,
               })}
             >
-              <Text className="text-white font-semibold text-sm">
-                {postingAnn ? "..." : "Post"}
+              <Text style={{ color: "white", fontWeight: "700", fontSize: 14 }}>
+                {postingAnn ? "…" : "Post"}
               </Text>
             </Pressable>
           </View>
 
           {announcements.length === 0 ? (
-            <View className="pb-4 items-center">
-              <Text className="text-gray-400 text-sm">No announcements yet.</Text>
+            <View style={{ paddingBottom: 16, alignItems: "center" }}>
+              <Text style={{ fontSize: 14, color: "#9CA3AF" }}>No announcements yet.</Text>
             </View>
           ) : (
             announcements.map((ann) => (
               <View
                 key={ann.id}
-                className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 mb-2 flex-row items-start"
+                style={{
+                  backgroundColor: "#FFFBEB",
+                  borderColor: "#FDE68A",
+                  borderWidth: 1,
+                  borderRadius: 14,
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
+                  marginBottom: 8,
+                  flexDirection: "row",
+                  alignItems: "flex-start",
+                }}
               >
-                <Text className="flex-1 text-amber-800 text-sm leading-relaxed">
+                <Text style={{ flex: 1, color: "#92400E", fontSize: 14, lineHeight: 20 }}>
                   {ann.message}
                 </Text>
                 <Pressable
                   onPress={() => handleDeleteAnnouncement(ann.id)}
                   style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
                 >
-                  <Text className="text-amber-400 ml-2 font-bold">✕</Text>
+                  <Text style={{ color: "#B45309", marginLeft: 8, fontWeight: "700", fontSize: 16 }}>✕</Text>
                 </Pressable>
               </View>
             ))
           )}
 
-          <View className="h-4" />
+          <View style={{ height: 16 }} />
         </View>
       </View>
 
@@ -945,17 +1083,17 @@ export default function AdminDashboardScreen() {
               opacity: pressed ? 0.5 : 1,
               flexDirection: "row" as const,
               alignItems: "center" as const,
-              gap: 2,
+              gap: 4,
             })}
           >
-            <Text style={{ fontSize: 22, color: "#111827", lineHeight: 26 }}>‹</Text>
-            <Text style={{ fontSize: 16, color: "#111827", fontWeight: "500" }}>Back</Text>
+            <Text style={{ fontSize: 20, color: "#0A0A0A" }}>←</Text>
+            <Text style={{ fontSize: 16, color: "#0A0A0A", fontWeight: "500" }}>Back</Text>
           </Pressable>
         ),
       }}
     />
     <ScrollView
-      className="flex-1 bg-gray-50"
+      style={{ flex: 1, backgroundColor: "#F9FAFB" }}
       contentContainerStyle={
         Platform.OS === "web"
           ? { maxWidth: 768, alignSelf: "center", width: "100%" }
@@ -963,19 +1101,19 @@ export default function AdminDashboardScreen() {
       }
     >
       {/* Header */}
-      <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
-        <Text className="text-sm text-gray-500">{user.email}</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}>
+        <Text style={{ fontSize: 14, color: "#6B7280" }}>{user.email}</Text>
         <Pressable
           onPress={handleSignOut}
           style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
         >
-          <Text className="text-gray-500 text-sm font-medium">Sign Out</Text>
+          <Text style={{ fontSize: 14, fontWeight: "600", color: "#6B7280" }}>Sign Out</Text>
         </Pressable>
       </View>
 
       {isLoading ? (
-        <View className="items-center justify-center py-20">
-          <ActivityIndicator color="#000" />
+        <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 80 }}>
+          <ActivityIndicator color="#0A0A0A" />
         </View>
       ) : rooms.length === 0 ? (
         <CreateRoomForm userId={user.id} />
@@ -999,8 +1137,8 @@ const styles = StyleSheet.create({
   },
   sheet: {
     backgroundColor: "white",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     maxHeight: "88%",
   },
   sheetContent: { padding: 24, paddingBottom: 48 },
