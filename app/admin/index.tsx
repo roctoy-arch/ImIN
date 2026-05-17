@@ -1093,7 +1093,10 @@ export default function AdminDashboardScreen() {
       }}
     />
     <ScrollView
-      style={{ flex: 1, backgroundColor: "#F9FAFB" }}
+      style={[
+        { flex: 1, backgroundColor: "#F9FAFB" },
+        Platform.OS === "web" ? ({ minHeight: "100dvh" } as any) : null,
+      ]}
       contentContainerStyle={
         Platform.OS === "web"
           ? { maxWidth: 768, alignSelf: "center", width: "100%" }

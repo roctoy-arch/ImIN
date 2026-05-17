@@ -2,11 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* iOS Safari: ensure content fills the visible viewport, not the full page height
-   including the address bar (avoids clipping at the bottom on iPhone) */
-html {
-  height: -webkit-fill-available;
+/* Anchor the root element chain so React Native Web's flex:1 fills the screen */
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
 }
+
+/* dvh adjusts dynamically as mobile browser chrome (address bars) show/hide.
+   Browsers ignore properties they don't understand, so the last valid value wins. */
+html {
+  height: -webkit-fill-available; /* Safari < 15.4 */
+  height: 100dvh;
+}
+
 body {
-  min-height: -webkit-fill-available;
+  min-height: -webkit-fill-available; /* Safari < 15.4 */
+  min-height: 100dvh;
+}
+
+#root {
+  overflow-x: hidden;
 }

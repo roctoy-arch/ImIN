@@ -71,6 +71,7 @@ export default function AdminLoginScreen() {
     <KeyboardAvoidingView
       className="flex-1 bg-white"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={Platform.OS === "web" ? ({ minHeight: "100dvh" } as any) : undefined}
     >
       <View className="flex-1 px-6 justify-center">
         <Text className="text-3xl font-bold text-gray-900 mb-2">

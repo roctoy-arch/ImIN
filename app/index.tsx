@@ -1,11 +1,14 @@
 import { useRouter } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 
 export default function HomeScreen() {
   const router = useRouter();
 
   return (
-    <View className="flex-1 bg-white">
+    <View
+      className="flex-1 bg-white"
+      style={Platform.OS === "web" ? ({ minHeight: "100dvh" } as any) : undefined}
+    >
       {/* Centered title + subtitle */}
       <View className="flex-1 items-center justify-center px-6">
         <Text
