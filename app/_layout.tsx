@@ -45,7 +45,15 @@ export default function RootLayout() {
         <meta name="twitter:card" content="summary" />
       </Head>
       <OfflineBanner />
-      <Stack>
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: "#ffffff" },
+          headerTitleStyle: { fontWeight: "700", fontSize: 17 },
+          headerShadowVisible: true,
+          headerTintColor: "#111827",
+          headerTitleAlign: "center",
+        }}
+      >
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="room/[slug]" options={{ headerLargeTitle: true }} />
         <Stack.Screen name="event/[id]" options={{ headerLargeTitle: true }} />

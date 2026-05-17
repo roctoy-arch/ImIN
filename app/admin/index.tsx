@@ -5,7 +5,7 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { Stack, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -75,6 +75,14 @@ function generateRecurringDates(start: Date, rule: string, count = 4): Date[] {
     }
   }
   return out;
+}
+
+function toDateInputValue(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function toTimeInputValue(d: Date) {
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
 // ─── Stats section ────────────────────────────────────────────────────────────
@@ -200,6 +208,22 @@ function EventModal({
     );
   }
 
+  function handleWebDateChange(dateStr: string) {
+    if (!dateStr) return;
+    const [y, m, day] = dateStr.split("-").map(Number);
+    const next = new Date(eventDate);
+    next.setFullYear(y, m - 1, day);
+    setEventDate(next);
+  }
+
+  function handleWebTimeChange(timeStr: string) {
+    if (!timeStr) return;
+    const [h, min] = timeStr.split(":").map(Number);
+    const next = new Date(eventDate);
+    next.setHours(h, min, 0, 0);
+    setEventDate(next);
+  }
+
   async function handleSave() {
     if (!title.trim()) return;
     setSaving(true);
@@ -311,7 +335,46 @@ function EventModal({
             <Text className="text-sm font-medium text-gray-700 mb-1">
               Date & time
             </Text>
-            {Platform.OS === "ios" ? (
+            {Platform.OS === "web" ? (
+              <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
+                {React.createElement("input", {
+                  type: "date",
+                  value: toDateInputValue(eventDate),
+                  onChange: (e: any) => handleWebDateChange(e.target.value),
+                  style: {
+                    flex: 1,
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 8,
+                    padding: "12px",
+                    fontSize: 16,
+                    color: "#111827",
+                    backgroundColor: "white",
+                    fontFamily: "inherit",
+                    outline: "none",
+                    cursor: "pointer",
+                    minWidth: 0,
+                  },
+                })}
+                {React.createElement("input", {
+                  type: "time",
+                  value: toTimeInputValue(eventDate),
+                  onChange: (e: any) => handleWebTimeChange(e.target.value),
+                  style: {
+                    flex: 1,
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 8,
+                    padding: "12px",
+                    fontSize: 16,
+                    color: "#111827",
+                    backgroundColor: "white",
+                    fontFamily: "inherit",
+                    outline: "none",
+                    cursor: "pointer",
+                    minWidth: 0,
+                  },
+                })}
+              </View>
+            ) : Platform.OS === "ios" ? (
               <DateTimePicker
                 value={eventDate}
                 mode="datetime"
@@ -878,9 +941,15 @@ export default function AdminDashboardScreen() {
           <Pressable
             onPress={() => router.back()}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+              flexDirection: "row" as const,
+              alignItems: "center" as const,
+              gap: 2,
+            })}
           >
-            <Text style={{ fontSize: 16, color: "#111827" }}>← Back</Text>
+            <Text style={{ fontSize: 22, color: "#111827", lineHeight: 26 }}>‹</Text>
+            <Text style={{ fontSize: 16, color: "#111827", fontWeight: "500" }}>Back</Text>
           </Pressable>
         ),
       }}

@@ -401,9 +401,15 @@ export default function EventDetailScreen() {
             <Pressable
               onPress={() => router.back()}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.5 : 1,
+                flexDirection: "row" as const,
+                alignItems: "center" as const,
+                gap: 2,
+              })}
             >
-              <Text style={{ fontSize: 16, color: "#111827" }}>← Back to Room</Text>
+              <Text style={{ fontSize: 22, color: "#111827", lineHeight: 26 }}>‹</Text>
+              <Text style={{ fontSize: 16, color: "#111827", fontWeight: "500" }}>Back</Text>
             </Pressable>
           ),
         }}
