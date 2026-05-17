@@ -1,16 +1,24 @@
 import { useRouter } from "expo-router";
 import { Platform, Pressable, Text, View } from "react-native";
 
+const webRoot = Platform.OS === "web"
+  ? ({ minHeight: "100dvh", maxWidth: 480, alignSelf: "center", width: "100%" } as any)
+  : undefined;
+
 export default function HomeScreen() {
   const router = useRouter();
 
   return (
-    <View
-      className="flex-1 bg-white"
-      style={Platform.OS === "web" ? ({ minHeight: "100dvh" } as any) : undefined}
-    >
-      {/* Centered title + subtitle */}
-      <View className="flex-1 items-center justify-center px-6">
+    <View style={{ flex: 1, backgroundColor: "white", ...(webRoot ?? {}) }}>
+      {/* Vertically centered title + subtitle */}
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingHorizontal: 24,
+        }}
+      >
         <Text
           style={{
             fontSize: 48,
@@ -42,7 +50,7 @@ export default function HomeScreen() {
         </Text>
         <Pressable
           onPress={() => router.push("/admin")}
-          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, marginTop: 4 })}
+          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, marginTop: 4, padding: 8 })}
         >
           <Text style={{ color: "#0A0A0A", fontWeight: "600", fontSize: 14 }}>
             Admin Area →

@@ -10,18 +10,43 @@ body,
   width: 100%;
 }
 
-/* dvh adjusts dynamically as mobile browser chrome (address bars) show/hide.
-   Browsers ignore properties they don't understand, so the last valid value wins. */
+/* dvh adjusts dynamically as mobile browser chrome shows/hides */
 html {
   height: -webkit-fill-available; /* Safari < 15.4 */
   height: 100dvh;
+  /* Remove 300ms tap delay globally */
+  touch-action: manipulation;
 }
 
 body {
   min-height: -webkit-fill-available; /* Safari < 15.4 */
   min-height: 100dvh;
+  /* Remove iOS tap highlight flash */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
 #root {
   overflow-x: hidden;
+}
+
+/*
+ * CRITICAL iOS Safari fix: React Native Web renders Pressable as <div role="button">.
+ * iOS Safari does NOT fire click events on divs unless they have cursor:pointer.
+ * touch-action:manipulation also removes the 300ms delay.
+ */
+[role="button"],
+button,
+[tabindex="0"] {
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+/*
+ * Prevent any invisible zero-size fixed overlays from blocking touch events.
+ * Expo Router / React Native Web sometimes injects focus-trap elements.
+ */
+div[style*="width: 0"][style*="height: 0"],
+div[style*="width:0"][style*="height:0"] {
+  pointer-events: none !important;
 }

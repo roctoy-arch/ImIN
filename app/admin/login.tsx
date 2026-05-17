@@ -11,6 +11,24 @@ import {
   View,
 } from "react-native";
 
+const inputStyle = {
+  backgroundColor: "#F5F5F5",
+  borderRadius: 12,
+  paddingHorizontal: 16,
+  paddingVertical: 14,
+  fontSize: 16,
+  color: "#0A0A0A",
+  marginBottom: 8,
+};
+
+const btnStyle = {
+  backgroundColor: "#0A0A0A",
+  borderRadius: 50,
+  paddingVertical: 18,
+  alignItems: "center" as const,
+  marginTop: 8,
+};
+
 export default function AdminLoginScreen() {
   const router = useRouter();
   const { user, isLoading } = db.useAuth();
@@ -51,7 +69,6 @@ export default function AdminLoginScreen() {
     setVerifyError("");
     try {
       await db.auth.signInWithMagicCode({ email: email.trim(), code: trimmedCode });
-      // useAuth() will update → useEffect fires → router.replace
     } catch (e: unknown) {
       setVerifyError(e instanceof Error ? e.message : "Invalid code. Try again.");
     } finally {
@@ -61,23 +78,32 @@ export default function AdminLoginScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#000" />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "white" }}>
+        <ActivityIndicator size="large" color="#0A0A0A" />
       </View>
     );
   }
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-white"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={Platform.OS === "web" ? ({ minHeight: "100dvh" } as any) : undefined}
+      style={[
+        { flex: 1, backgroundColor: "white" },
+        Platform.OS === "web"
+          ? ({
+              minHeight: "100dvh",
+              maxWidth: 480,
+              alignSelf: "center",
+              width: "100%",
+            } as any)
+          : null,
+      ]}
     >
-      <View className="flex-1 px-6 justify-center">
-        <Text className="text-3xl font-bold text-gray-900 mb-2">
+      <View style={{ flex: 1, paddingHorizontal: 24, justifyContent: "center" }}>
+        <Text style={{ fontSize: 28, fontWeight: "800", color: "#0A0A0A", marginBottom: 6 }}>
           {step === "email" ? "Admin Login" : "Enter Code"}
         </Text>
-        <Text className="text-gray-500 mb-8">
+        <Text style={{ fontSize: 15, color: "#6B7280", marginBottom: 32 }}>
           {step === "email"
             ? "Enter your email to receive a login code."
             : `We sent a 6-digit code to ${email.trim()}.`}
@@ -85,9 +111,13 @@ export default function AdminLoginScreen() {
 
         {step === "email" ? (
           <>
+            <Text style={{ fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 }}>
+              Email address
+            </Text>
             <TextInput
-              className="border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 mb-2"
+              style={inputStyle}
               placeholder="your@email.com"
+              placeholderTextColor="#9CA3AF"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -98,28 +128,33 @@ export default function AdminLoginScreen() {
               autoFocus
             />
             {sentError ? (
-              <Text className="text-red-500 text-sm mb-3">{sentError}</Text>
+              <Text style={{ color: "#EF4444", fontSize: 13, marginBottom: 12 }}>{sentError}</Text>
             ) : (
-              <View className="mb-3" />
+              <View style={{ marginBottom: 12 }} />
             )}
             <Pressable
               onPress={handleSendCode}
               disabled={sending || !email.trim()}
-              className="bg-black rounded-xl py-4 items-center"
               style={({ pressed }) => ({
+                ...btnStyle,
                 opacity: pressed || sending || !email.trim() ? 0.5 : 1,
+                transform: [{ scale: pressed ? 0.97 : 1 }],
               })}
             >
-              <Text className="text-white font-bold text-base">
+              <Text style={{ color: "white", fontWeight: "700", fontSize: 17 }}>
                 {sending ? "Sending..." : "Send Code"}
               </Text>
             </Pressable>
           </>
         ) : (
           <>
+            <Text style={{ fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 }}>
+              6-digit code
+            </Text>
             <TextInput
-              className="border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 mb-2 tracking-widest"
+              style={[inputStyle, { letterSpacing: 4, textAlign: "center" }]}
               placeholder="123456"
+              placeholderTextColor="#9CA3AF"
               value={code}
               onChangeText={setCode}
               keyboardType="number-pad"
@@ -129,31 +164,28 @@ export default function AdminLoginScreen() {
               autoFocus
             />
             {verifyError ? (
-              <Text className="text-red-500 text-sm mb-3">{verifyError}</Text>
+              <Text style={{ color: "#EF4444", fontSize: 13, marginBottom: 12 }}>{verifyError}</Text>
             ) : (
-              <View className="mb-3" />
+              <View style={{ marginBottom: 12 }} />
             )}
             <Pressable
               onPress={handleVerify}
               disabled={verifying || code.trim().length < 6}
-              className="bg-black rounded-xl py-4 items-center mb-3"
               style={({ pressed }) => ({
+                ...btnStyle,
                 opacity: pressed || verifying || code.trim().length < 6 ? 0.5 : 1,
+                transform: [{ scale: pressed ? 0.97 : 1 }],
               })}
             >
-              <Text className="text-white font-bold text-base">
+              <Text style={{ color: "white", fontWeight: "700", fontSize: 17 }}>
                 {verifying ? "Verifying..." : "Verify"}
               </Text>
             </Pressable>
             <Pressable
-              onPress={() => {
-                setStep("email");
-                setCode("");
-                setVerifyError("");
-              }}
-              className="items-center py-2"
+              onPress={() => { setStep("email"); setCode(""); setVerifyError(""); }}
+              style={{ alignItems: "center", paddingVertical: 12, marginTop: 4 }}
             >
-              <Text className="text-gray-400">← Back</Text>
+              <Text style={{ color: "#9CA3AF", fontSize: 15 }}>← Back</Text>
             </Pressable>
           </>
         )}
