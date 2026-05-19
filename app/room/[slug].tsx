@@ -1,7 +1,9 @@
 import { db } from "@/lib/db";
 import { APP_URL } from "@/constants/config";
+import { C, SHADOW } from "@/constants/design";
 import { AppSchema } from "@/instant.schema";
 import { InstaQLEntity } from "@instantdb/react-native";
+import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import Head from "expo-router/head";
 import { useState } from "react";
@@ -23,17 +25,9 @@ type Announcement = InstaQLEntity<AppSchema, "announcements">;
 type RoomWithEvents = InstaQLEntity<
   AppSchema,
   "rooms",
-  { events: { signups: {} }; announcements: {}; admin: {} }
+  { events: { signups: {}; photos: {} }; announcements: {}; admin: {} }
 >;
-type EventWithSignups = InstaQLEntity<AppSchema, "events", { signups: {} }>;
-
-const CARD_SHADOW = {
-  shadowColor: "#000",
-  shadowOpacity: 0.07,
-  shadowRadius: 12,
-  shadowOffset: { width: 0, height: 3 },
-  elevation: 3,
-} as const;
+type EventWithSignupsAndPhotos = InstaQLEntity<AppSchema, "events", { signups: {}; photos: {} }>;
 
 function formatDay(epoch: number) {
   return new Date(epoch).toLocaleDateString("en-US", {
@@ -50,52 +44,86 @@ function formatTime(epoch: number) {
   });
 }
 
-function EventCard({ event }: { event: EventWithSignups }) {
+function EventCard({ event }: { event: EventWithSignupsAndPhotos }) {
   const router = useRouter();
   const count = event.signups?.length ?? 0;
+  const coverUrl = (event.photos as any)?.[0]?.url ?? null;
+  const category = (event as any).category as string | undefined;
 
   return (
     <Pressable
       onPress={() => router.push(`/event/${event.id}`)}
       style={({ pressed }) => ({
         transform: [{ scale: pressed ? 0.97 : 1 }],
-        opacity: pressed ? 0.85 : 1,
+        opacity: pressed ? 0.9 : 1,
       })}
     >
       <View
         style={{
-          backgroundColor: "white",
+          backgroundColor: C.WHITE,
           borderRadius: 16,
-          padding: 20,
           marginBottom: 12,
-          ...CARD_SHADOW,
+          overflow: "hidden",
+          ...SHADOW,
         }}
       >
-        {/* Title + count badge */}
-        <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
+        {/* Image / placeholder */}
+        <View style={{ height: 160, backgroundColor: C.PLACEHOLDER_BG }}>
+          {coverUrl ? (
+            <Image
+              source={{ uri: coverUrl }}
+              style={{ width: "100%", height: 160 }}
+              contentFit="cover"
+            />
+          ) : null}
+          {category ? (
+            <View
+              style={{
+                position: "absolute",
+                bottom: 10,
+                left: 12,
+                backgroundColor: C.BG,
+                borderRadius: 20,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+              }}
+            >
+              <Text style={{ fontSize: 12, fontWeight: "700", color: C.PRIMARY }}>{category}</Text>
+            </View>
+          ) : null}
+        </View>
+
+        {/* Info */}
+        <View style={{ padding: 16 }}>
           <Text
-            style={{ fontSize: 16, fontWeight: "700", color: "#0A0A0A", flex: 1, marginRight: 12 }}
+            style={{ fontSize: 18, fontWeight: "700", color: C.PRIMARY }}
             numberOfLines={2}
           >
             {event.title}
           </Text>
-          <View style={{ backgroundColor: "#0A0A0A", borderRadius: 50, paddingHorizontal: 10, paddingVertical: 4, marginTop: 2 }}>
-            <Text style={{ color: "white", fontSize: 12, fontWeight: "600" }}>{count}</Text>
+          <Text style={{ fontSize: 13, color: C.SECONDARY, marginTop: 6 }}>
+            🕐 {formatDay(event.date)} · {formatTime(event.date)}
+          </Text>
+          {event.location ? (
+            <Text style={{ fontSize: 13, color: C.MUTED, marginTop: 2 }}>
+              📍 {event.location}
+            </Text>
+          ) : null}
+          <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 12 }}>
+            <View
+              style={{
+                backgroundColor: C.PRIMARY,
+                borderRadius: 50,
+                paddingHorizontal: 12,
+                paddingVertical: 4,
+              }}
+            >
+              <Text style={{ color: "white", fontSize: 12, fontWeight: "700" }}>
+                {count} {count === 1 ? "person" : "people"}
+              </Text>
+            </View>
           </View>
         </View>
-
-        {/* Date row */}
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={{ fontSize: 14, color: "#6B7280" }}>{formatDay(event.date)}</Text>
-          <Text style={{ color: "#D1D5DB", marginHorizontal: 6 }}>·</Text>
-          <Text style={{ fontSize: 14, fontWeight: "500", color: "#6B7280" }}>
-            {formatTime(event.date)}
-          </Text>
-        </View>
-
-        {event.location ? (
-          <Text style={{ fontSize: 12, color: "#9CA3AF", marginTop: 4 }}>{event.location}</Text>
-        ) : null}
       </View>
     </Pressable>
   );
@@ -112,6 +140,7 @@ export default function RoomScreen() {
     rooms: {
       events: {
         signups: {},
+        photos: {},
         $: { order: { date: "asc" } },
       },
       announcements: {},
@@ -122,16 +151,16 @@ export default function RoomScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#0A0A0A" />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: C.WHITE }}>
+        <ActivityIndicator size="large" color={C.PRIMARY} />
       </View>
     );
   }
 
   if (error) {
     return (
-      <View className="flex-1 items-center justify-center bg-white p-6">
-        <Text style={{ color: "#EF4444", textAlign: "center" }}>{error.message}</Text>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: C.WHITE, padding: 24 }}>
+        <Text style={{ color: C.ACCENT, textAlign: "center" }}>{error.message}</Text>
       </View>
     );
   }
@@ -140,17 +169,17 @@ export default function RoomScreen() {
 
   if (!room) {
     return (
-      <View className="flex-1 items-center justify-center bg-white p-6">
-        <Text style={{ fontSize: 22, fontWeight: "800", color: "#0A0A0A", marginBottom: 8 }}>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: C.WHITE, padding: 24 }}>
+        <Text style={{ fontSize: 22, fontWeight: "800", color: C.PRIMARY, marginBottom: 8 }}>
           Room not found
         </Text>
-        <Text style={{ color: "#6B7280", textAlign: "center", marginBottom: 24 }}>
+        <Text style={{ color: C.SECONDARY, textAlign: "center", marginBottom: 24 }}>
           No room with code "{slug}" exists.
         </Text>
         <Pressable
           onPress={() => router.back()}
           style={({ pressed }) => ({
-            backgroundColor: "#0A0A0A",
+            backgroundColor: C.PRIMARY,
             borderRadius: 50,
             paddingHorizontal: 28,
             paddingVertical: 14,
@@ -163,7 +192,7 @@ export default function RoomScreen() {
     );
   }
 
-  const events = (room.events ?? []) as EventWithSignups[];
+  const events = (room.events ?? []) as EventWithSignupsAndPhotos[];
   const announcements = (room.announcements ?? []) as Announcement[];
   const latestAnn = [...announcements].sort(
     (a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0)
@@ -176,10 +205,7 @@ export default function RoomScreen() {
     <>
       <Head>
         <meta property="og:title" content={`${room.name} – I'm IN`} />
-        <meta
-          property="og:description"
-          content={`Sign up for events at ${room.name}.`}
-        />
+        <meta property="og:description" content={`Sign up for events at ${room.name}.`} />
         <meta property="og:url" content={`${APP_URL}/room/${room.slug}`} />
       </Head>
       <Stack.Screen
@@ -196,13 +222,13 @@ export default function RoomScreen() {
                 gap: 4,
               })}
             >
-              <Text style={{ fontSize: 20, color: "#0A0A0A" }}>←</Text>
-              <Text style={{ fontSize: 16, color: "#0A0A0A", fontWeight: "500" }}>Home</Text>
+              <Text style={{ fontSize: 20, color: C.PRIMARY }}>←</Text>
+              <Text style={{ fontSize: 16, color: C.PRIMARY, fontWeight: "500" }}>Home</Text>
             </Pressable>
           ),
         }}
       />
-      <View style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
+      <View style={{ flex: 1, backgroundColor: C.WHITE }}>
         <FlatList
           data={events}
           keyExtractor={(item) => item.id}
@@ -210,23 +236,19 @@ export default function RoomScreen() {
           contentInsetAdjustmentBehavior="automatic"
           style={{ flex: 1 }}
           contentContainerStyle={{
-            paddingHorizontal: 20,
+            paddingHorizontal: 16,
             paddingTop: 4,
             paddingBottom: 100,
             ...(webContentStyle ?? {}),
           }}
           ListHeaderComponent={
             <>
-              {/* Large room name header */}
               <View style={{ paddingTop: 20, paddingBottom: 16 }}>
-                <Text
-                  style={{ fontSize: 32, fontWeight: "800", color: "#0A0A0A" }}
-                >
+                <Text style={{ fontSize: 28, fontWeight: "800", color: C.PRIMARY }}>
                   {room.name}
                 </Text>
               </View>
 
-              {/* Announcement banner */}
               {showBanner ? (
                 <View
                   style={{
@@ -257,14 +279,11 @@ export default function RoomScreen() {
           }
           ListEmptyComponent={
             <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 80 }}>
-              <Text style={{ color: "#9CA3AF", fontSize: 16 }}>
-                No events scheduled yet.
-              </Text>
+              <Text style={{ color: C.MUTED, fontSize: 16 }}>No events scheduled yet.</Text>
             </View>
           }
         />
 
-        {/* Admin FAB */}
         {isAdmin && (
           <Pressable
             onPress={() => router.push("/admin")}
@@ -275,7 +294,7 @@ export default function RoomScreen() {
               width: 56,
               height: 56,
               borderRadius: 28,
-              backgroundColor: "#0A0A0A",
+              backgroundColor: C.PRIMARY,
               alignItems: "center",
               justifyContent: "center",
               opacity: pressed ? 0.8 : 1,

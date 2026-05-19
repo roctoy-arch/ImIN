@@ -25,6 +25,7 @@ const _schema = i.schema({
       location: i.string(),
       isRecurring: i.boolean().optional(),
       recurrenceRule: i.string().optional(),
+      category: i.string().optional(),
     }),
     comments: i.entity({
       name: i.string(),

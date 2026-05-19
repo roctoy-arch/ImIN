@@ -1,3 +1,4 @@
+import { C } from "@/constants/design";
 import { useRouter } from "expo-router";
 import { Platform, Pressable, Text, View } from "react-native";
 
@@ -9,23 +10,16 @@ export default function HomeScreen() {
   const router = useRouter();
 
   return (
-    <View style={{ flex: 1, backgroundColor: "white", ...(webRoot ?? {}) }}>
-      {/* Vertically centered title + subtitle */}
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          paddingHorizontal: 24,
-        }}
-      >
+    <View style={{ flex: 1, backgroundColor: C.BG, ...(webRoot ?? {}) }}>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
         <Text
           style={{
-            fontSize: 48,
+            fontSize: 72,
             fontWeight: "900",
-            color: "#0A0A0A",
+            fontStyle: "italic",
+            color: C.PRIMARY,
+            lineHeight: 76,
             textAlign: "center",
-            lineHeight: 52,
           }}
         >
           {"I'm IN"}
@@ -33,26 +27,23 @@ export default function HomeScreen() {
         <Text
           style={{
             fontSize: 16,
-            color: "#9CA3AF",
+            color: C.SECONDARY,
             textAlign: "center",
-            marginTop: 12,
+            marginTop: 16,
             lineHeight: 24,
           }}
         >
-          Sign up for your gym's events in seconds.{"\n"}No account needed.
+          Sign up. Show up.
         </Text>
       </View>
 
-      {/* Admin link pinned to bottom */}
       <View style={{ paddingBottom: 52, alignItems: "center" }}>
-        <Text style={{ color: "#9CA3AF", fontSize: 13 }}>
-          Are you an organizer?
-        </Text>
+        <Text style={{ color: C.MUTED, fontSize: 13 }}>Are you an organizer?</Text>
         <Pressable
           onPress={() => router.push("/admin")}
           style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, marginTop: 4, padding: 8 })}
         >
-          <Text style={{ color: "#0A0A0A", fontWeight: "600", fontSize: 14 }}>
+          <Text style={{ color: C.PRIMARY, fontWeight: "600", fontSize: 14 }}>
             Admin Area →
           </Text>
         </Pressable>

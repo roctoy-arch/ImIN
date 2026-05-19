@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { db } from "@/lib/db";
+import { C } from "@/constants/design";
 import { id } from "@instantdb/react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -51,58 +52,85 @@ export default function SignUpScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerLeft: () => (
-            <Pressable
-              onPress={() => router.back()}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
-            >
-              <Text style={{ fontSize: 16, color: "#0A0A0A", fontWeight: "500" }}>Cancel</Text>
-            </Pressable>
-          ),
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: "white" }}
+        style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.45)",
+          justifyContent: "flex-end",
+          ...(Platform.OS === "web" ? ({ minHeight: "100dvh" } as any) : {}),
+        }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <View style={{ flex: 1, paddingHorizontal: 24, justifyContent: "center" }}>
+        {/* Tap-away dim area */}
+        <Pressable style={{ flex: 1 }} onPress={() => router.back()} />
+
+        {/* Sheet */}
+        <View
+          style={{
+            backgroundColor: C.WHITE,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            paddingHorizontal: 24,
+            paddingTop: 12,
+            paddingBottom: Platform.OS === "ios" ? 48 : 32,
+          }}
+        >
+          {/* Drag handle */}
+          <View
+            style={{
+              width: 40,
+              height: 4,
+              backgroundColor: C.BORDER,
+              borderRadius: 2,
+              alignSelf: "center",
+              marginBottom: 24,
+            }}
+          />
+
           {done ? (
-            <View style={{ alignItems: "center", paddingVertical: 40 }}>
+            <View style={{ alignItems: "center", paddingVertical: 32 }}>
               <Text style={{ fontSize: 64, marginBottom: 16 }}>🎉</Text>
-              <Text style={{ fontSize: 28, fontWeight: "800", color: "#0A0A0A" }}>
+              <Text style={{ fontSize: 28, fontWeight: "800", color: C.PRIMARY }}>
                 You're IN!
               </Text>
-              <Text style={{ fontSize: 16, color: "#6B7280", marginTop: 8 }}>
+              <Text style={{ fontSize: 16, color: C.SECONDARY, marginTop: 8 }}>
                 See you there, {name.trim()}.
               </Text>
             </View>
           ) : (
             <>
-              <Text style={{ fontSize: 28, fontWeight: "800", color: "#0A0A0A", marginBottom: 6 }}>
+              <Text style={{ fontSize: 22, fontWeight: "800", color: C.PRIMARY, marginBottom: 6 }}>
                 Join this event
               </Text>
-              <Text style={{ fontSize: 15, color: "#6B7280", marginBottom: 32 }}>
+              <Text style={{ fontSize: 15, color: C.SECONDARY, marginBottom: 24 }}>
                 Enter your name to sign up.
               </Text>
 
-              <Text style={{ fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 8 }}>
+              <Text
+                style={{
+                  fontSize: 11,
+                  fontWeight: "600",
+                  color: C.MUTED,
+                  marginBottom: 8,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.8,
+                }}
+              >
                 Your name
               </Text>
               <TextInput
                 style={{
-                  backgroundColor: "#F5F5F5",
-                  borderRadius: 12,
+                  backgroundColor: C.INPUT,
+                  borderRadius: 14,
                   paddingHorizontal: 16,
                   paddingVertical: 16,
                   fontSize: 16,
-                  color: "#0A0A0A",
+                  color: C.PRIMARY,
                   marginBottom: 24,
                 }}
                 placeholder="e.g. Alex Smith"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={C.MUTED}
                 value={name}
                 onChangeText={setName}
                 autoFocus
@@ -114,21 +142,29 @@ export default function SignUpScreen() {
                 onPress={handleSignUp}
                 disabled={saving || !name.trim()}
                 style={({ pressed }) => ({
-                  backgroundColor: "#0A0A0A",
+                  backgroundColor: C.PRIMARY,
                   borderRadius: 50,
-                  paddingVertical: 18,
+                  paddingVertical: 20,
                   alignItems: "center",
                   transform: [{ scale: pressed ? 0.97 : 1 }],
                   opacity: pressed || saving || !name.trim() ? 0.5 : 1,
                 })}
               >
-                <Text style={{ color: "white", fontWeight: "700", fontSize: 17 }}>
-                  {saving ? "Joining..." : "I'm IN"}
+                <Text
+                  style={{
+                    color: "white",
+                    fontWeight: "900",
+                    fontSize: 16,
+                    textTransform: "uppercase",
+                    letterSpacing: 1,
+                  }}
+                >
+                  {saving ? "Joining..." : "I'M IN"}
                 </Text>
               </Pressable>
 
               {error ? (
-                <Text style={{ color: "#EF4444", fontSize: 14, textAlign: "center", marginTop: 12 }}>
+                <Text style={{ color: C.ACCENT, fontSize: 14, textAlign: "center", marginTop: 12 }}>
                   {error}
                 </Text>
               ) : null}
@@ -137,7 +173,7 @@ export default function SignUpScreen() {
                 onPress={() => router.back()}
                 style={{ alignItems: "center", marginTop: 16, paddingVertical: 8 }}
               >
-                <Text style={{ color: "#9CA3AF", fontSize: 15 }}>Cancel</Text>
+                <Text style={{ color: C.MUTED, fontSize: 15 }}>Cancel</Text>
               </Pressable>
             </>
           )}

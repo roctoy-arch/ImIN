@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { APP_URL } from "@/constants/config";
+import { C, CATEGORIES, SHADOW } from "@/constants/design";
 import { AppSchema } from "@/instant.schema";
 import { InstaQLEntity, id } from "@instantdb/react-native";
 import * as ImagePicker from "expo-image-picker";
@@ -47,14 +48,6 @@ const webContentStyle =
   Platform.OS === "web"
     ? ({ maxWidth: 768, alignSelf: "center" as const, width: "100%" as const } as const)
     : undefined;
-
-const CARD_SHADOW = {
-  shadowColor: "#000",
-  shadowOpacity: 0.07,
-  shadowRadius: 12,
-  shadowOffset: { width: 0, height: 3 },
-  elevation: 3,
-} as const;
 
 const AVATAR_COLORS = [
   "#6366f1", "#8b5cf6", "#ec4899", "#f43f5e",
@@ -134,6 +127,7 @@ function EditEventModal({
   const [description, setDescription] = useState(event.description);
   const [location, setLocation] = useState(event.location);
   const [eventDate, setEventDate] = useState(new Date(event.date));
+  const [category, setCategory] = useState<string>((event as any).category ?? "");
   const [saving, setSaving] = useState(false);
   const [androidStep, setAndroidStep] = useState<"date" | "time" | null>(null);
 
@@ -143,6 +137,7 @@ function EditEventModal({
       setDescription(event.description);
       setLocation(event.location);
       setEventDate(new Date(event.date));
+      setCategory((event as any).category ?? "");
     }
   }, [visible]);
 
@@ -176,6 +171,7 @@ function EditEventModal({
           description: description.trim(),
           location: location.trim(),
           date: eventDate.getTime(),
+          ...(category ? { category } : {}),
         })
       );
       onClose();
@@ -185,12 +181,12 @@ function EditEventModal({
   }
 
   const inputStyle = {
-    backgroundColor: "#F5F5F5",
+    backgroundColor: C.INPUT,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: "#0A0A0A",
+    color: C.PRIMARY,
     marginBottom: 16,
   };
 
@@ -207,34 +203,38 @@ function EditEventModal({
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.sheetContent}
           >
-            <Text style={{ fontSize: 22, fontWeight: "800", color: "#0A0A0A", marginBottom: 24 }}>
+            <Text style={{ fontSize: 22, fontWeight: "800", color: C.PRIMARY, marginBottom: 24 }}>
               Edit Event
             </Text>
 
             <Text style={styles.label}>Title</Text>
-            <TextInput
-              style={inputStyle}
-              placeholder="Event title"
-              value={title}
-              onChangeText={setTitle}
-            />
+            <TextInput style={inputStyle} placeholder="Event title" value={title} onChangeText={setTitle} />
 
             <Text style={styles.label}>Description</Text>
-            <TextInput
-              style={[inputStyle, { minHeight: 72 }]}
-              placeholder="Optional description"
-              value={description}
-              onChangeText={setDescription}
-              multiline
-            />
+            <TextInput style={[inputStyle, { minHeight: 72 }]} placeholder="Optional description" value={description} onChangeText={setDescription} multiline />
 
             <Text style={styles.label}>Location</Text>
-            <TextInput
-              style={inputStyle}
-              placeholder="Optional location"
-              value={location}
-              onChangeText={setLocation}
-            />
+            <TextInput style={inputStyle} placeholder="Optional location" value={location} onChangeText={setLocation} />
+
+            <Text style={styles.label}>Category</Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+              {CATEGORIES.map((cat) => (
+                <Pressable
+                  key={cat}
+                  onPress={() => setCategory(cat === category ? "" : cat)}
+                  style={{
+                    backgroundColor: category === cat ? C.PRIMARY : C.BG,
+                    borderRadius: 20,
+                    paddingHorizontal: 14,
+                    paddingVertical: 8,
+                  }}
+                >
+                  <Text style={{ color: category === cat ? "white" : C.PRIMARY, fontSize: 13, fontWeight: "600" }}>
+                    {cat}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
 
             <Text style={styles.label}>Date & time</Text>
             {Platform.OS === "ios" ? (
@@ -244,30 +244,18 @@ function EditEventModal({
                 display="spinner"
                 onChange={onPickerChange}
                 style={{ marginBottom: 16 }}
-                textColor="#0A0A0A"
+                textColor={C.PRIMARY}
               />
             ) : (
               <>
                 <Pressable
                   onPress={() => setAndroidStep("date")}
-                  style={{
-                    backgroundColor: "#F5F5F5",
-                    borderRadius: 12,
-                    padding: 16,
-                    marginBottom: 16,
-                  }}
+                  style={{ backgroundColor: C.INPUT, borderRadius: 12, padding: 16, marginBottom: 16 }}
                 >
-                  <Text style={{ fontSize: 16, color: "#0A0A0A" }}>
-                    {eventDate.toLocaleString()}
-                  </Text>
+                  <Text style={{ fontSize: 16, color: C.PRIMARY }}>{eventDate.toLocaleString()}</Text>
                 </Pressable>
                 {androidStep !== null && (
-                  <DateTimePicker
-                    value={eventDate}
-                    mode={androidStep}
-                    display="default"
-                    onChange={onPickerChange}
-                  />
+                  <DateTimePicker value={eventDate} mode={androidStep} display="default" onChange={onPickerChange} />
                 )}
               </>
             )}
@@ -276,7 +264,7 @@ function EditEventModal({
               onPress={handleSave}
               disabled={saving || !title.trim()}
               style={({ pressed }) => ({
-                backgroundColor: "#0A0A0A",
+                backgroundColor: C.PRIMARY,
                 borderRadius: 50,
                 paddingVertical: 18,
                 alignItems: "center",
@@ -289,11 +277,8 @@ function EditEventModal({
                 {saving ? "Saving..." : "Save Changes"}
               </Text>
             </Pressable>
-            <Pressable
-              onPress={onClose}
-              style={{ alignItems: "center", paddingVertical: 12, marginTop: 4 }}
-            >
-              <Text style={{ color: "#6B7280", fontSize: 15 }}>Cancel</Text>
+            <Pressable onPress={onClose} style={{ alignItems: "center", paddingVertical: 12, marginTop: 4 }}>
+              <Text style={{ color: C.SECONDARY, fontSize: 15 }}>Cancel</Text>
             </Pressable>
           </ScrollView>
         </View>
@@ -336,6 +321,8 @@ export default function EventDetailScreen() {
   const photos = (event?.photos ?? []) as Photo[];
   const comments = (event?.comments ?? []) as Comment[];
   const isAdmin = !!user && event?.room?.admin?.id === user.id;
+  const coverUrl = photos[0]?.url ?? null;
+  const category = (event as any)?.category as string | undefined;
 
   useEffect(() => {
     if (!mySignupId || !event) return;
@@ -421,35 +408,35 @@ export default function EventDetailScreen() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "white" }}>
-        <ActivityIndicator size="large" color="#0A0A0A" />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: C.WHITE }}>
+        <ActivityIndicator size="large" color={C.PRIMARY} />
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "white", padding: 24 }}>
-        <Text style={{ color: "#EF4444", textAlign: "center" }}>{error.message}</Text>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: C.WHITE, padding: 24 }}>
+        <Text style={{ color: C.ACCENT, textAlign: "center" }}>{error.message}</Text>
       </View>
     );
   }
 
   if (!event) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "white" }}>
-        <Text style={{ color: "#9CA3AF" }}>Event not found.</Text>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: C.WHITE }}>
+        <Text style={{ color: C.MUTED }}>Event not found.</Text>
       </View>
     );
   }
 
   const commentInputStyle = {
-    backgroundColor: "#F5F5F5",
+    backgroundColor: C.INPUT,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 15,
-    color: "#0A0A0A",
+    color: C.PRIMARY,
     marginBottom: 12,
   };
 
@@ -477,14 +464,14 @@ export default function EventDetailScreen() {
                 gap: 4,
               })}
             >
-              <Text style={{ fontSize: 20, color: "#0A0A0A" }}>←</Text>
-              <Text style={{ fontSize: 16, color: "#0A0A0A", fontWeight: "500" }}>Back</Text>
+              <Text style={{ fontSize: 20, color: C.PRIMARY }}>←</Text>
+              <Text style={{ fontSize: 16, color: C.PRIMARY, fontWeight: "500" }}>Back</Text>
             </Pressable>
           ),
         }}
       />
       <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: "white" }}
+        style={{ flex: 1, backgroundColor: C.WHITE }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView
@@ -492,21 +479,60 @@ export default function EventDetailScreen() {
           contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={webContentStyle}
         >
-          <View style={{ padding: 20 }}>
-            {/* Event info */}
-            <Text style={{ fontSize: 28, fontWeight: "800", color: "#0A0A0A", marginBottom: 10 }}>
+          {/* Hero image / placeholder */}
+          {coverUrl ? (
+            <Image
+              source={{ uri: coverUrl }}
+              style={{ height: 220, width: "100%" }}
+              contentFit="cover"
+            />
+          ) : (
+            <View style={{ height: 220, backgroundColor: C.PLACEHOLDER_BG }} />
+          )}
+
+          {/* White card overlapping hero */}
+          <View
+            style={{
+              backgroundColor: C.WHITE,
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              marginTop: -24,
+              paddingHorizontal: 20,
+              paddingTop: 24,
+            }}
+          >
+            {/* Title */}
+            <Text style={{ fontSize: 24, fontWeight: "800", color: C.PRIMARY, marginBottom: 8 }}>
               {event.title}
             </Text>
-            <Text style={{ fontSize: 15, color: "#6B7280", marginBottom: 4 }}>
+
+            {/* Category pill */}
+            {category ? (
+              <View style={{ flexDirection: "row", marginBottom: 12 }}>
+                <View
+                  style={{
+                    backgroundColor: C.BG,
+                    borderRadius: 20,
+                    paddingHorizontal: 12,
+                    paddingVertical: 5,
+                  }}
+                >
+                  <Text style={{ fontSize: 12, fontWeight: "700", color: C.PRIMARY }}>{category}</Text>
+                </View>
+              </View>
+            ) : null}
+
+            {/* Date + location */}
+            <Text style={{ fontSize: 15, color: C.SECONDARY, marginBottom: 4 }}>
               📅 {formatDate(event.date)}
             </Text>
             {event.location ? (
-              <Text style={{ fontSize: 15, color: "#6B7280", marginBottom: 4 }}>
+              <Text style={{ fontSize: 15, color: C.SECONDARY, marginBottom: 4 }}>
                 📍 {event.location}
               </Text>
             ) : null}
             {event.description ? (
-              <Text style={{ fontSize: 15, color: "#374151", marginTop: 12, lineHeight: 22 }}>
+              <Text style={{ fontSize: 15, color: C.PRIMARY, marginTop: 12, lineHeight: 22 }}>
                 {event.description}
               </Text>
             ) : null}
@@ -518,14 +544,14 @@ export default function EventDetailScreen() {
                   onPress={() => setShowEdit(true)}
                   style={({ pressed }) => ({
                     flex: 1,
-                    backgroundColor: "#F5F5F5",
+                    backgroundColor: C.INPUT,
                     borderRadius: 16,
                     paddingVertical: 14,
                     alignItems: "center",
                     transform: [{ scale: pressed ? 0.97 : 1 }],
                   })}
                 >
-                  <Text style={{ color: "#0A0A0A", fontWeight: "600" }}>Edit</Text>
+                  <Text style={{ color: C.PRIMARY, fontWeight: "600" }}>Edit</Text>
                 </Pressable>
                 <Pressable
                   onPress={handleDelete}
@@ -538,49 +564,53 @@ export default function EventDetailScreen() {
                     transform: [{ scale: pressed ? 0.97 : 1 }],
                   })}
                 >
-                  <Text style={{ color: "#EF4444", fontWeight: "600" }}>Delete</Text>
+                  <Text style={{ color: C.ACCENT, fontWeight: "600" }}>Delete</Text>
                 </Pressable>
               </View>
             )}
 
-            {/* I'm IN / I'm OUT button */}
+            {/* I'M IN / I'M OUT */}
             {mySignupId ? (
               <Pressable
                 onPress={handleCancelSignup}
                 style={({ pressed }) => ({
-                  backgroundColor: "#EF4444",
+                  backgroundColor: C.ACCENT,
                   borderRadius: 50,
-                  paddingVertical: 18,
+                  paddingVertical: 20,
                   alignItems: "center",
                   marginTop: 20,
                   transform: [{ scale: pressed ? 0.97 : 1 }],
                 })}
               >
-                <Text style={{ color: "white", fontWeight: "700", fontSize: 17 }}>I'm OUT</Text>
+                <Text style={{ color: "white", fontWeight: "900", fontSize: 18, letterSpacing: 1, textTransform: "uppercase" }}>
+                  I'M OUT
+                </Text>
               </Pressable>
             ) : (
               <Pressable
                 onPress={() => router.push(`/sign-up/${eventId}`)}
                 style={({ pressed }) => ({
-                  backgroundColor: "#0A0A0A",
+                  backgroundColor: C.PRIMARY,
                   borderRadius: 50,
-                  paddingVertical: 18,
+                  paddingVertical: 20,
                   alignItems: "center",
                   marginTop: 20,
                   transform: [{ scale: pressed ? 0.97 : 1 }],
                 })}
               >
-                <Text style={{ color: "white", fontWeight: "700", fontSize: 17 }}>I'm IN</Text>
+                <Text style={{ color: "white", fontWeight: "900", fontSize: 18, letterSpacing: 1, textTransform: "uppercase" }}>
+                  I'M IN
+                </Text>
               </Pressable>
             )}
 
-            {/* Who's in — avatar circles */}
+            {/* Who's in */}
             <View style={{ marginTop: 32 }}>
-              <Text style={{ fontSize: 16, fontWeight: "700", color: "#0A0A0A", marginBottom: 12 }}>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: C.PRIMARY, marginBottom: 12 }}>
                 Who's in ({signups.length})
               </Text>
               {signups.length === 0 ? (
-                <Text style={{ color: "#9CA3AF", fontSize: 14 }}>Be the first to sign up!</Text>
+                <Text style={{ color: C.MUTED, fontSize: 14 }}>Be the first to sign up!</Text>
               ) : (
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
                   {signups.map((s) => (
@@ -600,7 +630,7 @@ export default function EventDetailScreen() {
                         </Text>
                       </View>
                       <Text
-                        style={{ fontSize: 11, color: "#6B7280", maxWidth: 52, textAlign: "center" }}
+                        style={{ fontSize: 11, color: C.SECONDARY, maxWidth: 52, textAlign: "center" }}
                         numberOfLines={1}
                       >
                         {s.name.split(" ")[0]}
@@ -614,7 +644,7 @@ export default function EventDetailScreen() {
             {/* Photo gallery */}
             <View style={{ marginTop: 32 }}>
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <Text style={{ fontSize: 16, fontWeight: "700", color: "#0A0A0A" }}>
+                <Text style={{ fontSize: 16, fontWeight: "700", color: C.PRIMARY }}>
                   Photos ({photos.length})
                 </Text>
                 <Pressable
@@ -622,7 +652,7 @@ export default function EventDetailScreen() {
                   disabled={uploading}
                   style={({ pressed }) => ({ opacity: pressed || uploading ? 0.5 : 1 })}
                 >
-                  <Text style={{ color: "#0A0A0A", fontWeight: "600", fontSize: 14 }}>
+                  <Text style={{ color: C.PRIMARY, fontWeight: "600", fontSize: 14 }}>
                     {uploading ? "Uploading..." : "+ Add Photo"}
                   </Text>
                 </Pressable>
@@ -633,14 +663,12 @@ export default function EventDetailScreen() {
                   style={{
                     paddingVertical: 32,
                     alignItems: "center",
-                    backgroundColor: "#F5F5F5",
+                    backgroundColor: C.INPUT,
                     borderRadius: 16,
                   }}
                 >
-                  <Text style={{ color: "#9CA3AF", fontSize: 14 }}>No photos yet.</Text>
-                  <Text style={{ color: "#9CA3AF", fontSize: 13, marginTop: 4 }}>
-                    Be the first to share one!
-                  </Text>
+                  <Text style={{ color: C.MUTED, fontSize: 14 }}>No photos yet.</Text>
+                  <Text style={{ color: C.MUTED, fontSize: 13, marginTop: 4 }}>Be the first to share one!</Text>
                 </View>
               ) : (
                 <View style={styles.grid}>
@@ -650,12 +678,7 @@ export default function EventDetailScreen() {
                       onPress={() => setLightboxUrl(photo.url)}
                       style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
                     >
-                      <Image
-                        source={{ uri: photo.url }}
-                        style={styles.tile}
-                        contentFit="cover"
-                        transition={200}
-                      />
+                      <Image source={{ uri: photo.url }} style={styles.tile} contentFit="cover" transition={200} />
                     </Pressable>
                   ))}
                 </View>
@@ -664,24 +687,22 @@ export default function EventDetailScreen() {
 
             {/* Comments */}
             <View style={{ marginTop: 32, marginBottom: 16 }}>
-              <Text style={{ fontSize: 16, fontWeight: "700", color: "#0A0A0A", marginBottom: 12 }}>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: C.PRIMARY, marginBottom: 12 }}>
                 Comments ({comments.length})
               </Text>
 
               {comments.length === 0 ? (
-                <Text style={{ color: "#9CA3AF", fontSize: 14, marginBottom: 16 }}>
-                  No comments yet. Be the first!
-                </Text>
+                <Text style={{ color: C.MUTED, fontSize: 14, marginBottom: 16 }}>No comments yet. Be the first!</Text>
               ) : (
                 comments.map((c) => (
                   <View
                     key={c.id}
                     style={{
-                      backgroundColor: "white",
+                      backgroundColor: C.WHITE,
                       borderRadius: 16,
                       padding: 14,
                       marginBottom: 8,
-                      ...CARD_SHADOW,
+                      ...SHADOW,
                     }}
                   >
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
@@ -695,18 +716,14 @@ export default function EventDetailScreen() {
                           justifyContent: "center",
                         }}
                       >
-                        <Text style={{ color: "white", fontSize: 11, fontWeight: "700" }}>
-                          {getInitials(c.name)}
-                        </Text>
+                        <Text style={{ color: "white", fontSize: 11, fontWeight: "700" }}>{getInitials(c.name)}</Text>
                       </View>
-                      <Text style={{ fontWeight: "600", fontSize: 13, color: "#0A0A0A" }}>
-                        {c.name}
-                      </Text>
-                      <Text style={{ fontSize: 11, color: "#9CA3AF", marginLeft: "auto" }}>
+                      <Text style={{ fontWeight: "600", fontSize: 13, color: C.PRIMARY }}>{c.name}</Text>
+                      <Text style={{ fontSize: 11, color: C.MUTED, marginLeft: "auto" }}>
                         {formatShortTime(c.createdAt)}
                       </Text>
                     </View>
-                    <Text style={{ fontSize: 14, color: "#374151", lineHeight: 20, marginLeft: 36 }}>
+                    <Text style={{ fontSize: 14, color: C.PRIMARY, lineHeight: 20, marginLeft: 36 }}>
                       {c.message}
                     </Text>
                   </View>
@@ -714,22 +731,15 @@ export default function EventDetailScreen() {
               )}
 
               {/* Comment form */}
-              <View
-                style={{
-                  backgroundColor: "white",
-                  borderRadius: 16,
-                  padding: 16,
-                  marginTop: 8,
-                  ...CARD_SHADOW,
-                }}
-              >
-                <Text style={{ fontSize: 14, fontWeight: "700", color: "#0A0A0A", marginBottom: 12 }}>
+              <View style={{ backgroundColor: C.WHITE, borderRadius: 16, padding: 16, marginTop: 8, ...SHADOW }}>
+                <Text style={{ fontSize: 14, fontWeight: "700", color: C.PRIMARY, marginBottom: 12 }}>
                   Leave a comment
                 </Text>
                 <Text style={styles.label}>Your name</Text>
                 <TextInput
                   style={commentInputStyle}
                   placeholder="e.g. Alex"
+                  placeholderTextColor={C.MUTED}
                   value={commentName}
                   onChangeText={setCommentName}
                   returnKeyType="next"
@@ -738,6 +748,7 @@ export default function EventDetailScreen() {
                 <TextInput
                   style={[commentInputStyle, { minHeight: 64 }]}
                   placeholder="What's on your mind?"
+                  placeholderTextColor={C.MUTED}
                   value={commentMessage}
                   onChangeText={setCommentMessage}
                   multiline
@@ -749,7 +760,7 @@ export default function EventDetailScreen() {
                   onPress={handlePostComment}
                   disabled={postingComment || !commentName.trim() || !commentMessage.trim()}
                   style={({ pressed }) => ({
-                    backgroundColor: "#0A0A0A",
+                    backgroundColor: C.PRIMARY,
                     borderRadius: 50,
                     paddingVertical: 14,
                     alignItems: "center",
@@ -772,11 +783,7 @@ export default function EventDetailScreen() {
 
       <PhotoLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
       {showEdit && (
-        <EditEventModal
-          visible={showEdit}
-          event={event}
-          onClose={() => setShowEdit(false)}
-        />
+        <EditEventModal visible={showEdit} event={event} onClose={() => setShowEdit(false)} />
       )}
     </>
   );
@@ -784,17 +791,19 @@ export default function EventDetailScreen() {
 
 const styles = StyleSheet.create({
   label: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: "600",
-    color: "#374151",
+    color: C.MUTED,
     marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
   },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: TILE_GAP },
   tile: {
     width: TILE_SIZE,
     height: TILE_SIZE,
     borderRadius: 12,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: C.PLACEHOLDER_BG,
   },
   lightboxBg: {
     flex: 1,
@@ -821,7 +830,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
   },
   sheet: {
-    backgroundColor: "white",
+    backgroundColor: C.WHITE,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
   },

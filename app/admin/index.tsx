@@ -23,6 +23,7 @@ import {
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { APP_URL } from "@/constants/config";
+import { C, CATEGORIES } from "@/constants/design";
 
 type RoomWithEvents = InstaQLEntity<
   AppSchema,
@@ -114,39 +115,31 @@ function StatsSection({ events }: { events: EventWithSignups[] }) {
 
   const statCardStyle = {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: C.BG,
     borderRadius: 16,
     padding: 14,
     alignItems: "center" as const,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
   };
 
   return (
     <View style={{ paddingHorizontal: 20, paddingBottom: 16 }}>
-      <Text style={{ fontSize: 12, fontWeight: "600", color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 12 }}>
+      <Text style={{ fontSize: 12, fontWeight: "600", color: C.SECONDARY, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 12 }}>
         Stats
       </Text>
       <View style={{ flexDirection: "row", gap: 8 }}>
         <View style={statCardStyle}>
-          <Text style={{ fontSize: 28, fontWeight: "800", color: "#0A0A0A" }}>{thisWeekSignups}</Text>
-          <Text style={{ fontSize: 11, color: "#9CA3AF", textAlign: "center", marginTop: 2 }}>signups{"\n"}this week</Text>
+          <Text style={{ fontSize: 28, fontWeight: "800", color: C.PRIMARY }}>{thisWeekSignups}</Text>
+          <Text style={{ fontSize: 11, color: C.MUTED, textAlign: "center", marginTop: 2 }}>signups{"\n"}this week</Text>
         </View>
         <View style={statCardStyle}>
-          <Text
-            style={{ fontSize: 15, fontWeight: "700", color: "#0A0A0A", textAlign: "center" }}
-            numberOfLines={2}
-          >
+          <Text style={{ fontSize: 15, fontWeight: "700", color: C.PRIMARY, textAlign: "center" }} numberOfLines={2}>
             {mostPopular?.title ?? "—"}
           </Text>
-          <Text style={{ fontSize: 11, color: "#9CA3AF", textAlign: "center", marginTop: 2 }}>most{"\n"}popular</Text>
+          <Text style={{ fontSize: 11, color: C.MUTED, textAlign: "center", marginTop: 2 }}>most{"\n"}popular</Text>
         </View>
         <View style={statCardStyle}>
-          <Text style={{ fontSize: 28, fontWeight: "800", color: "#0A0A0A" }}>{avgAttendance}</Text>
-          <Text style={{ fontSize: 11, color: "#9CA3AF", textAlign: "center", marginTop: 2 }}>avg{"\n"}attendance</Text>
+          <Text style={{ fontSize: 28, fontWeight: "800", color: C.PRIMARY }}>{avgAttendance}</Text>
+          <Text style={{ fontSize: 11, color: C.MUTED, textAlign: "center", marginTop: 2 }}>avg{"\n"}attendance</Text>
         </View>
       </View>
     </View>
@@ -169,6 +162,7 @@ function EventModal({
   const [title, setTitle] = useState(editEvent?.title ?? "");
   const [description, setDescription] = useState(editEvent?.description ?? "");
   const [location, setLocation] = useState(editEvent?.location ?? "");
+  const [category, setCategory] = useState<string>((editEvent as any)?.category ?? "");
   const [eventDate, setEventDate] = useState(
     editEvent ? new Date(editEvent.date) : new Date()
   );
@@ -185,6 +179,7 @@ function EventModal({
       setTitle(editEvent?.title ?? "");
       setDescription(editEvent?.description ?? "");
       setLocation(editEvent?.location ?? "");
+      setCategory((editEvent as any)?.category ?? "");
       setEventDate(editEvent ? new Date(editEvent.date) : new Date());
       setIsRecurring(false);
       setRecurrenceType("weekly");
@@ -248,6 +243,7 @@ function EventModal({
             description: description.trim(),
             location: location.trim(),
             date: eventDate.getTime(),
+            ...(category ? { category } : {}),
           })
         );
       } else {
@@ -272,6 +268,7 @@ function EventModal({
               date: eventDate.getTime(),
               isRecurring,
               recurrenceRule: rule,
+              ...(category ? { category } : {}),
             })
             .link({ room: roomId }),
         ];
@@ -287,6 +284,7 @@ function EventModal({
                   date: d.getTime(),
                   isRecurring: true,
                   recurrenceRule: rule,
+                  ...(category ? { category } : {}),
                 })
                 .link({ room: roomId })
             );
@@ -308,20 +306,22 @@ function EventModal({
   ];
 
   const modalInputStyle = {
-    backgroundColor: "#F5F5F5",
+    backgroundColor: C.INPUT,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: "#0A0A0A",
+    color: C.PRIMARY,
     marginBottom: 16,
   };
 
   const modalInputLabel = {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: "600" as const,
-    color: "#374151",
+    color: C.MUTED,
     marginBottom: 6,
+    textTransform: "uppercase" as const,
+    letterSpacing: 0.8,
   };
 
   return (
@@ -337,13 +337,14 @@ function EventModal({
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.sheetContent}
           >
-            <Text style={{ fontSize: 22, fontWeight: "800", color: "#0A0A0A", marginBottom: 24 }}>
+            <Text style={{ fontSize: 22, fontWeight: "800", color: C.PRIMARY, marginBottom: 24 }}>
               {editEvent ? "Edit Event" : "New Event"}
             </Text>
             <Text style={modalInputLabel}>Title</Text>
             <TextInput
               style={modalInputStyle}
               placeholder="Event title"
+              placeholderTextColor={C.MUTED}
               value={title}
               onChangeText={setTitle}
               returnKeyType="next"
@@ -352,6 +353,7 @@ function EventModal({
             <TextInput
               style={[modalInputStyle, { minHeight: 64 }]}
               placeholder="Optional description"
+              placeholderTextColor={C.MUTED}
               value={description}
               onChangeText={setDescription}
               multiline
@@ -361,10 +363,30 @@ function EventModal({
             <TextInput
               style={modalInputStyle}
               placeholder="Optional location"
+              placeholderTextColor={C.MUTED}
               value={location}
               onChangeText={setLocation}
               returnKeyType="done"
             />
+            <Text style={modalInputLabel}>Category</Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+              {CATEGORIES.map((cat) => (
+                <Pressable
+                  key={cat}
+                  onPress={() => setCategory(cat === category ? "" : cat)}
+                  style={{
+                    backgroundColor: category === cat ? C.PRIMARY : C.BG,
+                    borderRadius: 20,
+                    paddingHorizontal: 14,
+                    paddingVertical: 8,
+                  }}
+                >
+                  <Text style={{ color: category === cat ? "white" : C.PRIMARY, fontSize: 13, fontWeight: "600" }}>
+                    {cat}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
             <Text style={modalInputLabel}>
               Date & time
             </Text>
@@ -380,8 +402,8 @@ function EventModal({
                     borderRadius: 12,
                     padding: "14px 16px",
                     fontSize: 16,
-                    color: "#0A0A0A",
-                    backgroundColor: "#F5F5F5",
+                    color: C.PRIMARY,
+                    backgroundColor: C.INPUT,
                     fontFamily: "inherit",
                     outline: "none",
                     cursor: "pointer",
@@ -398,8 +420,8 @@ function EventModal({
                     borderRadius: 12,
                     padding: "14px 16px",
                     fontSize: 16,
-                    color: "#0A0A0A",
-                    backgroundColor: "#F5F5F5",
+                    color: C.PRIMARY,
+                    backgroundColor: C.INPUT,
                     fontFamily: "inherit",
                     outline: "none",
                     cursor: "pointer",
@@ -414,15 +436,15 @@ function EventModal({
                 display="spinner"
                 onChange={onPickerChange}
                 style={{ marginBottom: 8 }}
-                textColor="#0A0A0A"
+                textColor={C.PRIMARY}
               />
             ) : (
               <>
                 <Pressable
                   onPress={() => setAndroidStep("date")}
-                  style={{ backgroundColor: "#F5F5F5", borderRadius: 12, padding: 16, marginBottom: 16 }}
+                  style={{ backgroundColor: C.INPUT, borderRadius: 12, padding: 16, marginBottom: 16 }}
                 >
-                  <Text style={{ fontSize: 16, color: "#0A0A0A" }}>
+                  <Text style={{ fontSize: 16, color: C.PRIMARY }}>
                     {formatDate(eventDate.getTime())}
                   </Text>
                 </Pressable>
@@ -441,13 +463,13 @@ function EventModal({
             {!editEvent && (
               <View style={{ marginBottom: 16 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                  <Text style={{ fontSize: 14, fontWeight: "600", color: "#374151" }}>
+                  <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>
                     Recurring event
                   </Text>
                   <Switch
                     value={isRecurring}
                     onValueChange={setIsRecurring}
-                    trackColor={{ false: "#E5E7EB", true: "#0A0A0A" }}
+                    trackColor={{ false: "#E5E7EB", true: C.PRIMARY }}
                     thumbColor="#ffffff"
                   />
                 </View>
@@ -464,14 +486,14 @@ function EventModal({
                             paddingVertical: 10,
                             borderRadius: 10,
                             alignItems: "center",
-                            backgroundColor: recurrenceType === rt.value ? "#0A0A0A" : "#F5F5F5",
+                            backgroundColor: recurrenceType === rt.value ? C.PRIMARY : C.BG,
                           }}
                         >
                           <Text
                             style={{
                               fontSize: 14,
                               fontWeight: "600",
-                              color: recurrenceType === rt.value ? "white" : "#6B7280",
+                              color: recurrenceType === rt.value ? "white" : C.SECONDARY,
                             }}
                           >
                             {rt.label}
@@ -491,14 +513,14 @@ function EventModal({
                               paddingVertical: 8,
                               borderRadius: 8,
                               alignItems: "center",
-                              backgroundColor: customDays.includes(idx) ? "#0A0A0A" : "#F5F5F5",
+                              backgroundColor: customDays.includes(idx) ? C.PRIMARY : C.BG,
                             }}
                           >
                             <Text
                               style={{
                                 fontSize: 12,
                                 fontWeight: "700",
-                                color: customDays.includes(idx) ? "white" : "#9CA3AF",
+                                color: customDays.includes(idx) ? "white" : C.MUTED,
                               }}
                             >
                               {label}
@@ -520,7 +542,7 @@ function EventModal({
               onPress={handleSave}
               disabled={saving || !title.trim()}
               style={({ pressed }) => ({
-                backgroundColor: "#0A0A0A",
+                backgroundColor: C.PRIMARY,
                 borderRadius: 50,
                 paddingVertical: 18,
                 alignItems: "center",
@@ -540,7 +562,7 @@ function EventModal({
               </Text>
             </Pressable>
             <Pressable onPress={onClose} style={{ alignItems: "center", paddingVertical: 12, marginTop: 4 }}>
-              <Text style={{ color: "#6B7280", fontSize: 15 }}>Cancel</Text>
+              <Text style={{ color: C.SECONDARY, fontSize: 15 }}>Cancel</Text>
             </Pressable>
           </ScrollView>
         </View>
@@ -591,18 +613,18 @@ function CreateRoomForm({ userId }: { userId: string }) {
   }
 
   const crInputStyle = {
-    backgroundColor: "#F5F5F5",
+    backgroundColor: C.INPUT,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: "#0A0A0A",
+    color: C.PRIMARY,
     marginBottom: 4,
   };
 
   return (
     <View style={{
-      backgroundColor: "white",
+      backgroundColor: C.WHITE,
       borderRadius: 20,
       padding: 20,
       marginHorizontal: 16,
@@ -613,39 +635,41 @@ function CreateRoomForm({ userId }: { userId: string }) {
       shadowOffset: { width: 0, height: 3 },
       elevation: 3,
     }}>
-      <Text style={{ fontSize: 20, fontWeight: "800", color: "#0A0A0A", marginBottom: 4 }}>
+      <Text style={{ fontSize: 20, fontWeight: "800", color: C.PRIMARY, marginBottom: 4 }}>
         Create Your Room
       </Text>
-      <Text style={{ fontSize: 14, color: "#6B7280", marginBottom: 20 }}>
+      <Text style={{ fontSize: 14, color: C.SECONDARY, marginBottom: 20 }}>
         Members will use your room link to find your events.
       </Text>
-      <Text style={{ fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 }}>Room name</Text>
+      <Text style={{ fontSize: 11, fontWeight: "600", color: C.MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8 }}>Room name</Text>
       <TextInput
         style={[crInputStyle, { marginBottom: 16 }]}
         placeholder="e.g. GymBox BJJ"
+        placeholderTextColor={C.MUTED}
         value={name}
         onChangeText={handleNameChange}
       />
-      <Text style={{ fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 }}>Room code</Text>
+      <Text style={{ fontSize: 11, fontWeight: "600", color: C.MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8 }}>Room code</Text>
       <TextInput
         style={crInputStyle}
         placeholder="e.g. gymbox-bjj"
+        placeholderTextColor={C.MUTED}
         value={slug}
         onChangeText={handleSlugChange}
         autoCapitalize="none"
         autoCorrect={false}
       />
       {slug ? (
-        <Text style={{ fontSize: 12, color: "#9CA3AF", marginTop: 4, marginBottom: 4 }}>
+        <Text style={{ fontSize: 12, color: C.MUTED, marginTop: 4, marginBottom: 4 }}>
           Members visit: /room/{slug}
         </Text>
       ) : <View style={{ height: 16 }} />}
-      {error ? <Text style={{ color: "#EF4444", fontSize: 14, marginBottom: 12 }}>{error}</Text> : null}
+      {error ? <Text style={{ color: C.ACCENT, fontSize: 14, marginBottom: 12 }}>{error}</Text> : null}
       <Pressable
         onPress={handleCreate}
         disabled={saving || !name.trim() || !slug.trim()}
         style={({ pressed }) => ({
-          backgroundColor: "#0A0A0A",
+          backgroundColor: C.PRIMARY,
           borderRadius: 50,
           paddingVertical: 18,
           alignItems: "center",
@@ -676,9 +700,10 @@ function EventRow({
   onShare: () => void;
 }) {
   const count = event.signups?.length ?? 0;
+  const category = (event as any).category as string | undefined;
   return (
     <View style={{
-      backgroundColor: "white",
+      backgroundColor: C.WHITE,
       borderRadius: 14,
       padding: 16,
       marginBottom: 8,
@@ -691,25 +716,30 @@ function EventRow({
       <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
         <View style={{ flex: 1, marginRight: 12 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
-            <Text style={{ fontSize: 15, fontWeight: "700", color: "#0A0A0A" }}>{event.title}</Text>
+            <Text style={{ fontSize: 15, fontWeight: "700", color: C.PRIMARY }}>{event.title}</Text>
             {event.isRecurring && (
               <View style={{ backgroundColor: "#EEF2FF", borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
                 <Text style={{ color: "#6366F1", fontSize: 11 }}>↺</Text>
               </View>
             )}
           </View>
-          <Text style={{ fontSize: 12, color: "#9CA3AF", marginBottom: 2 }}>
+          <Text style={{ fontSize: 12, color: C.MUTED, marginBottom: 2 }}>
             {formatDate(event.date)}
           </Text>
           {event.location ? (
-            <Text style={{ fontSize: 12, color: "#9CA3AF" }}>{event.location}</Text>
+            <Text style={{ fontSize: 12, color: C.MUTED }}>{event.location}</Text>
           ) : null}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}>
-            <View style={{ backgroundColor: "#F5F5F5", borderRadius: 50, paddingHorizontal: 10, paddingVertical: 3 }}>
-              <Text style={{ fontSize: 12, fontWeight: "600", color: "#0A0A0A" }}>
-                {count} {count === 1 ? "in" : "in"}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 }}>
+            <View style={{ backgroundColor: C.BG, borderRadius: 50, paddingHorizontal: 10, paddingVertical: 3 }}>
+              <Text style={{ fontSize: 12, fontWeight: "600", color: C.PRIMARY }}>
+                {count} in
               </Text>
             </View>
+            {category ? (
+              <View style={{ backgroundColor: C.BG, borderRadius: 50, paddingHorizontal: 10, paddingVertical: 3 }}>
+                <Text style={{ fontSize: 12, fontWeight: "600", color: C.PRIMARY }}>{category}</Text>
+              </View>
+            ) : null}
           </View>
         </View>
         <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
@@ -717,19 +747,19 @@ function EventRow({
             onPress={onEdit}
             style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
           >
-            <Text style={{ fontSize: 14, fontWeight: "600", color: "#0A0A0A" }}>Edit</Text>
+            <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>Edit</Text>
           </Pressable>
           <Pressable
             onPress={onShare}
             style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
           >
-            <Text style={{ fontSize: 14, fontWeight: "600", color: "#6B7280" }}>Share</Text>
+            <Text style={{ fontSize: 14, fontWeight: "600", color: C.SECONDARY }}>Share</Text>
           </Pressable>
           <Pressable
             onPress={onDelete}
             style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
           >
-            <Text style={{ fontSize: 14, fontWeight: "600", color: "#EF4444" }}>Delete</Text>
+            <Text style={{ fontSize: 14, fontWeight: "600", color: C.ACCENT }}>Delete</Text>
           </Pressable>
         </View>
       </View>
@@ -827,7 +857,7 @@ function RoomCard({
   return (
     <>
       <View style={{
-        backgroundColor: "white",
+        backgroundColor: C.WHITE,
         borderRadius: 20,
         marginHorizontal: 16,
         marginTop: 16,
@@ -839,31 +869,31 @@ function RoomCard({
         elevation: 4,
       }}>
         {/* Room header */}
-        <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}>
+        <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: C.BORDER }}>
           {/* Name + View row */}
           <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 22, fontWeight: "800", color: "#0A0A0A" }}>{room.name}</Text>
-              <Text style={{ fontSize: 13, color: "#9CA3AF", marginTop: 2 }}>{room.slug}</Text>
+              <Text style={{ fontSize: 22, fontWeight: "800", color: C.PRIMARY }}>{room.name}</Text>
+              <Text style={{ fontSize: 13, color: C.MUTED, marginTop: 2 }}>{room.slug}</Text>
             </View>
             <Pressable
               onPress={() => router.push(`/room/${room.slug}`)}
               style={({ pressed }) => ({
-                backgroundColor: "#F5F5F5",
+                backgroundColor: C.BG,
                 borderRadius: 10,
                 paddingHorizontal: 14,
                 paddingVertical: 8,
                 opacity: pressed ? 0.7 : 1,
               })}
             >
-              <Text style={{ fontSize: 14, fontWeight: "600", color: "#0A0A0A" }}>View →</Text>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>View →</Text>
             </Pressable>
           </View>
 
           {/* Share section */}
-          <View style={{ backgroundColor: "#F9FAFB", borderRadius: 14, padding: 14 }}>
-            <Text style={{ fontSize: 11, color: "#9CA3AF", marginBottom: 4, fontWeight: "500" }}>Room link</Text>
-            <Text style={{ fontSize: 14, fontWeight: "500", color: "#374151", marginBottom: 12 }} numberOfLines={1}>
+          <View style={{ backgroundColor: C.BG, borderRadius: 14, padding: 14 }}>
+            <Text style={{ fontSize: 11, color: C.MUTED, marginBottom: 4, fontWeight: "500" }}>Room link</Text>
+            <Text style={{ fontSize: 14, fontWeight: "500", color: C.PRIMARY, marginBottom: 12 }} numberOfLines={1}>
               {roomUrl}
             </Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
@@ -871,7 +901,7 @@ function RoomCard({
                 onPress={handleCopyRoomLink}
                 style={({ pressed }) => ({
                   flex: 1,
-                  backgroundColor: "white",
+                  backgroundColor: C.WHITE,
                   borderRadius: 10,
                   paddingVertical: 10,
                   alignItems: "center",
@@ -883,7 +913,7 @@ function RoomCard({
                   elevation: 1,
                 })}
               >
-                <Text style={{ fontSize: 14, fontWeight: "600", color: "#0A0A0A" }}>
+                <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>
                   {copied ? "Copied ✓" : "Copy Link"}
                 </Text>
               </Pressable>
@@ -891,7 +921,7 @@ function RoomCard({
                 onPress={handleShareRoom}
                 style={({ pressed }) => ({
                   flex: 1,
-                  backgroundColor: "#0A0A0A",
+                  backgroundColor: C.PRIMARY,
                   borderRadius: 10,
                   paddingVertical: 10,
                   alignItems: "center",
@@ -914,20 +944,20 @@ function RoomCard({
         {/* Events */}
         <View style={{ paddingHorizontal: 20 }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingTop: 16, paddingBottom: 8 }}>
-            <Text style={{ fontSize: 12, fontWeight: "600", color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.8 }}>
+            <Text style={{ fontSize: 12, fontWeight: "600", color: C.SECONDARY, textTransform: "uppercase", letterSpacing: 0.8 }}>
               Events ({events.length})
             </Text>
             <Pressable
               onPress={openCreate}
               style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
             >
-              <Text style={{ fontSize: 15, fontWeight: "700", color: "#0A0A0A" }}>+ New</Text>
+              <Text style={{ fontSize: 15, fontWeight: "700", color: C.PRIMARY }}>+ New</Text>
             </Pressable>
           </View>
 
           {events.length === 0 ? (
             <View style={{ paddingVertical: 24, alignItems: "center" }}>
-              <Text style={{ fontSize: 14, color: "#9CA3AF" }}>No events yet. Create one!</Text>
+              <Text style={{ fontSize: 14, color: C.MUTED }}>No events yet. Create one!</Text>
             </View>
           ) : (
             events.map((event) => (
@@ -943,8 +973,8 @@ function RoomCard({
         </View>
 
         {/* Announcements */}
-        <View style={{ paddingHorizontal: 20, borderTopWidth: 1, borderTopColor: "#F3F4F6", marginTop: 8 }}>
-          <Text style={{ fontSize: 12, fontWeight: "600", color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.8, paddingTop: 16, marginBottom: 12 }}>
+        <View style={{ paddingHorizontal: 20, borderTopWidth: 1, borderTopColor: C.BORDER, marginTop: 8 }}>
+          <Text style={{ fontSize: 12, fontWeight: "600", color: C.SECONDARY, textTransform: "uppercase", letterSpacing: 0.8, paddingTop: 16, marginBottom: 12 }}>
             Announcements
           </Text>
 
@@ -953,14 +983,15 @@ function RoomCard({
             <TextInput
               style={{
                 flex: 1,
-                backgroundColor: "#F5F5F5",
+                backgroundColor: C.INPUT,
                 borderRadius: 12,
                 paddingHorizontal: 14,
                 paddingVertical: 12,
                 fontSize: 14,
-                color: "#0A0A0A",
+                color: C.PRIMARY,
               }}
               placeholder="Post an announcement..."
+              placeholderTextColor={C.MUTED}
               value={announcementText}
               onChangeText={setAnnouncementText}
               returnKeyType="send"
@@ -970,7 +1001,7 @@ function RoomCard({
               onPress={handlePostAnnouncement}
               disabled={postingAnn || !announcementText.trim()}
               style={({ pressed }) => ({
-                backgroundColor: "#0A0A0A",
+                backgroundColor: C.PRIMARY,
                 borderRadius: 50,
                 paddingHorizontal: 18,
                 alignItems: "center",
@@ -986,7 +1017,7 @@ function RoomCard({
 
           {announcements.length === 0 ? (
             <View style={{ paddingBottom: 16, alignItems: "center" }}>
-              <Text style={{ fontSize: 14, color: "#9CA3AF" }}>No announcements yet.</Text>
+              <Text style={{ fontSize: 14, color: C.MUTED }}>No announcements yet.</Text>
             </View>
           ) : (
             announcements.map((ann) => (
@@ -1062,7 +1093,7 @@ export default function AdminDashboardScreen() {
 
   if (authLoading || !user) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: C.WHITE }}>
         <ActivityIndicator size="large" color="#000" />
       </View>
     );
@@ -1086,15 +1117,15 @@ export default function AdminDashboardScreen() {
               gap: 4,
             })}
           >
-            <Text style={{ fontSize: 20, color: "#0A0A0A" }}>←</Text>
-            <Text style={{ fontSize: 16, color: "#0A0A0A", fontWeight: "500" }}>Back</Text>
+            <Text style={{ fontSize: 20, color: C.PRIMARY }}>←</Text>
+            <Text style={{ fontSize: 16, color: C.PRIMARY, fontWeight: "500" }}>Back</Text>
           </Pressable>
         ),
       }}
     />
     <ScrollView
       style={[
-        { flex: 1, backgroundColor: "#F9FAFB" },
+        { flex: 1, backgroundColor: C.WHITE },
         Platform.OS === "web" ? ({ minHeight: "100dvh" } as any) : null,
       ]}
       contentContainerStyle={
@@ -1104,19 +1135,19 @@ export default function AdminDashboardScreen() {
       }
     >
       {/* Header */}
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: "#F3F4F6" }}>
-        <Text style={{ fontSize: 14, color: "#6B7280" }}>{user.email}</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: C.BORDER }}>
+        <Text style={{ fontSize: 14, color: C.SECONDARY }}>{user.email}</Text>
         <Pressable
           onPress={handleSignOut}
           style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
         >
-          <Text style={{ fontSize: 14, fontWeight: "600", color: "#6B7280" }}>Sign Out</Text>
+          <Text style={{ fontSize: 14, fontWeight: "600", color: C.SECONDARY }}>Sign Out</Text>
         </Pressable>
       </View>
 
       {isLoading ? (
         <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 80 }}>
-          <ActivityIndicator color="#0A0A0A" />
+          <ActivityIndicator color={C.PRIMARY} />
         </View>
       ) : rooms.length === 0 ? (
         <CreateRoomForm userId={user.id} />
@@ -1126,7 +1157,7 @@ export default function AdminDashboardScreen() {
         ))
       )}
 
-      <View className="h-10" />
+      <View style={{ height: 40 }} />
     </ScrollView>
     </>
   );

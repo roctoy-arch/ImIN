@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { C } from "@/constants/design";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -12,17 +13,17 @@ import {
 } from "react-native";
 
 const inputStyle = {
-  backgroundColor: "#F5F5F5",
+  backgroundColor: C.INPUT,
   borderRadius: 12,
   paddingHorizontal: 16,
   paddingVertical: 14,
   fontSize: 16,
-  color: "#0A0A0A",
+  color: C.PRIMARY,
   marginBottom: 8,
 };
 
 const btnStyle = {
-  backgroundColor: "#0A0A0A",
+  backgroundColor: C.PRIMARY,
   borderRadius: 50,
   paddingVertical: 18,
   alignItems: "center" as const,
@@ -100,7 +101,7 @@ export default function AdminLoginScreen() {
       ]}
     >
       <View style={{ flex: 1, paddingHorizontal: 24, justifyContent: "center" }}>
-        <Text style={{ fontSize: 28, fontWeight: "800", color: "#0A0A0A", marginBottom: 6 }}>
+        <Text style={{ fontSize: 28, fontWeight: "800", color: C.PRIMARY, marginBottom: 6 }}>
           {step === "email" ? "Admin Login" : "Enter Code"}
         </Text>
         <Text style={{ fontSize: 15, color: "#6B7280", marginBottom: 32 }}>
@@ -128,7 +129,7 @@ export default function AdminLoginScreen() {
               autoFocus
             />
             {sentError ? (
-              <Text style={{ color: "#EF4444", fontSize: 13, marginBottom: 12 }}>{sentError}</Text>
+              <Text style={{ color: C.ACCENT, fontSize: 13, marginBottom: 12 }}>{sentError}</Text>
             ) : (
               <View style={{ marginBottom: 12 }} />
             )}
@@ -164,7 +165,7 @@ export default function AdminLoginScreen() {
               autoFocus
             />
             {verifyError ? (
-              <Text style={{ color: "#EF4444", fontSize: 13, marginBottom: 12 }}>{verifyError}</Text>
+              <Text style={{ color: C.ACCENT, fontSize: 13, marginBottom: 12 }}>{verifyError}</Text>
             ) : (
               <View style={{ marginBottom: 12 }} />
             )}

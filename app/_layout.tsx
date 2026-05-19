@@ -18,7 +18,7 @@ function OfflineBanner() {
   return (
     <View
       style={{
-        backgroundColor: "#ef4444",
+        backgroundColor: "#FF4217",
         paddingVertical: 6,
         alignItems: "center",
       }}
@@ -47,10 +47,10 @@ export default function RootLayout() {
       <OfflineBanner />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: "#ffffff" },
-          headerTitleStyle: { fontWeight: "700", fontSize: 17, color: "#0A0A0A" },
-          headerShadowVisible: true,
-          headerTintColor: "#0A0A0A",
+          headerStyle: { backgroundColor: "#FFFFFF" },
+          headerTitleStyle: { fontWeight: "700", fontSize: 17, color: "#1C242B" },
+          headerShadowVisible: false,
+          headerTintColor: "#1C242B",
           headerTitleAlign: "center",
         }}
       >
