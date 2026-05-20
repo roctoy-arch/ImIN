@@ -557,14 +557,14 @@ export default function RoomScreen() {
         }}
       />
 
-      <View style={{ flex: 1, backgroundColor: C.WHITE, ...webRootStyle }}>
+      <View style={{ ...(Platform.OS !== "web" ? { flex: 1 } : {}), backgroundColor: C.WHITE, ...webRootStyle }}>
         {/* Room cover photo */}
         {coverUrl ? (
           <Image source={{ uri: coverUrl }} style={{ height: 200, width: "100%" }} contentFit="cover" />
         ) : null}
 
         {/* Tab content */}
-        <View style={{ flex: 1, ...(Platform.OS === "web" ? { overflow: "hidden" as const } : {}) }}>
+        <View style={{ flex: 1, ...(Platform.OS === "web" ? { overflow: "auto" as any } : {}) }}>
           {activeTab === "home" && (
             <HomeTab
               events={events}

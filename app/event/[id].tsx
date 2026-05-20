@@ -293,7 +293,43 @@ function EditEventModal({
 
 function MapPreviewCard({ location }: { location: string }) {
   const [mapError, setMapError] = useState(false);
-  const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${encodeURIComponent(location)}&zoom=15&size=600x200&maptype=mapnik&markers=${encodeURIComponent(location)},red`;
+  const encoded = encodeURIComponent(location);
+  const mapSrc = `https://maps.google.com/maps?q=${encoded}&output=embed&z=15`;
+  const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${encoded}&zoom=15&size=600x200&maptype=mapnik&markers=${encoded},red`;
+
+  const buttonRow = (
+    <View style={{ flexDirection: "row", borderTopWidth: 1, borderTopColor: "#DDD8FF" }}>
+      <Pressable
+        onPress={() => Linking.openURL(`https://maps.google.com/?q=${encoded}`)}
+        style={({ pressed }) => ({ flex: 1, paddingVertical: 14, alignItems: "center", opacity: pressed ? 0.7 : 1 })}
+      >
+        <Text style={{ fontSize: 14, fontWeight: "700", color: C.PRIMARY }}>Open in Maps</Text>
+      </Pressable>
+      <View style={{ width: 1, backgroundColor: "#DDD8FF" }} />
+      <Pressable
+        onPress={() => Linking.openURL(`https://maps.google.com/dir/?api=1&destination=${encoded}`)}
+        style={({ pressed }) => ({ flex: 1, paddingVertical: 14, alignItems: "center", opacity: pressed ? 0.7 : 1 })}
+      >
+        <Text style={{ fontSize: 14, fontWeight: "700", color: C.PRIMARY }}>Get Directions</Text>
+      </Pressable>
+    </View>
+  );
+
+  if (Platform.OS === "web") {
+    const IFrame = "iframe" as any;
+    return (
+      <View style={{ backgroundColor: "#F0F0FF", borderRadius: 16, overflow: "hidden", marginTop: 4, marginBottom: 8 }}>
+        <IFrame
+          src={mapSrc}
+          width="100%"
+          height={180}
+          style={{ border: "none", display: "block" }}
+          loading="lazy"
+        />
+        {buttonRow}
+      </View>
+    );
+  }
 
   return (
     <View style={{ backgroundColor: "#F0F0FF", borderRadius: 16, overflow: "hidden", marginTop: 4, marginBottom: 8 }}>
@@ -312,21 +348,7 @@ function MapPreviewCard({ location }: { location: string }) {
           </Text>
         </View>
       )}
-      <View style={{ flexDirection: "row", borderTopWidth: 1, borderTopColor: "#DDD8FF" }}>
-        <Pressable
-          onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(location)}`)}
-          style={({ pressed }) => ({ flex: 1, paddingVertical: 14, alignItems: "center", opacity: pressed ? 0.7 : 1 })}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "700", color: C.PRIMARY }}>Open in Maps</Text>
-        </Pressable>
-        <View style={{ width: 1, backgroundColor: "#DDD8FF" }} />
-        <Pressable
-          onPress={() => Linking.openURL(`https://maps.google.com/dir/?api=1&destination=${encodeURIComponent(location)}`)}
-          style={({ pressed }) => ({ flex: 1, paddingVertical: 14, alignItems: "center", opacity: pressed ? 0.7 : 1 })}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "700", color: C.PRIMARY }}>Get Directions</Text>
-        </Pressable>
-      </View>
+      {buttonRow}
     </View>
   );
 }
