@@ -289,6 +289,59 @@ function EditEventModal({
   );
 }
 
+// ─── MapPreviewCard ───────────────────────────────────────────────────────────
+
+function MapPreviewCard({ location }: { location: string }) {
+  const [coords, setCoords] = useState<{ lat: string; lon: string } | null>(null);
+
+  useEffect(() => {
+    fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`,
+      { headers: { "Accept-Language": "en" } }
+    )
+      .then((r) => r.json())
+      .then((results: any[]) => {
+        if (results?.[0]) setCoords({ lat: results[0].lat, lon: results[0].lon });
+      })
+      .catch(() => {});
+  }, [location]);
+
+  const mapUrl = coords
+    ? `https://staticmap.openstreetmap.de/staticmap.php?center=${coords.lat},${coords.lon}&zoom=15&size=400x180&markers=${coords.lat},${coords.lon},red-pushpin`
+    : null;
+
+  return (
+    <View style={{ backgroundColor: C.BG, borderRadius: 16, padding: 16, marginTop: 4, marginBottom: 8 }}>
+      {mapUrl ? (
+        <Image
+          source={{ uri: mapUrl }}
+          style={{ height: 140, borderRadius: 10, marginBottom: 12 }}
+          contentFit="cover"
+        />
+      ) : (
+        <View style={{ height: 100, backgroundColor: C.PLACEHOLDER_BG, borderRadius: 10, alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+          <Text style={{ fontSize: 28 }}>🗺️</Text>
+          <Text style={{ fontSize: 12, color: C.SECONDARY, marginTop: 4 }} numberOfLines={1}>{location}</Text>
+        </View>
+      )}
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        <Pressable
+          onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(location)}`)}
+          style={({ pressed }) => ({ flex: 1, backgroundColor: C.WHITE, borderRadius: 10, paddingVertical: 10, alignItems: "center", ...SHADOW, opacity: pressed ? 0.7 : 1 })}
+        >
+          <Text style={{ fontSize: 13, fontWeight: "600", color: C.PRIMARY }}>📍 View on Maps</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => Linking.openURL(`https://maps.google.com/dir/?api=1&destination=${encodeURIComponent(location)}`)}
+          style={({ pressed }) => ({ flex: 1, backgroundColor: C.PRIMARY, borderRadius: 10, paddingVertical: 10, alignItems: "center", opacity: pressed ? 0.7 : 1 })}
+        >
+          <Text style={{ fontSize: 13, fontWeight: "600", color: "white" }}>🧭 Get Directions</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 export default function EventDetailScreen() {
   const { id: eventId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -538,28 +591,7 @@ export default function EventDetailScreen() {
                 </Text>
               </Pressable>
             ) : null}
-            {event.location ? (
-              <View style={{ backgroundColor: C.BG, borderRadius: 16, padding: 16, marginTop: 4, marginBottom: 8 }}>
-                <View style={{ height: 80, backgroundColor: C.PLACEHOLDER_BG, borderRadius: 10, alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
-                  <Text style={{ fontSize: 28 }}>🗺️</Text>
-                  <Text style={{ fontSize: 12, color: C.SECONDARY, marginTop: 4 }} numberOfLines={1}>{event.location}</Text>
-                </View>
-                <View style={{ flexDirection: "row", gap: 8 }}>
-                  <Pressable
-                    onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(event.location)}`)}
-                    style={({ pressed }) => ({ flex: 1, backgroundColor: C.WHITE, borderRadius: 10, paddingVertical: 10, alignItems: "center", ...SHADOW, opacity: pressed ? 0.7 : 1 })}
-                  >
-                    <Text style={{ fontSize: 13, fontWeight: "600", color: C.PRIMARY }}>📍 View on Maps</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => Linking.openURL(`https://maps.google.com/dir/?api=1&destination=${encodeURIComponent(event.location)}`)}
-                    style={({ pressed }) => ({ flex: 1, backgroundColor: C.PRIMARY, borderRadius: 10, paddingVertical: 10, alignItems: "center", opacity: pressed ? 0.7 : 1 })}
-                  >
-                    <Text style={{ fontSize: 13, fontWeight: "600", color: "white" }}>🧭 Get Directions</Text>
-                  </Pressable>
-                </View>
-              </View>
-            ) : null}
+            {event.location ? <MapPreviewCard location={event.location} /> : null}
             {event.description ? (
               <Text style={{ fontSize: 15, color: C.PRIMARY, marginTop: 12, lineHeight: 22 }}>
                 {event.description}

@@ -24,6 +24,7 @@ import {
   View,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
+import * as Linking from "expo-linking";
 import { APP_URL } from "@/constants/config";
 import { C, CATEGORIES, SHADOW } from "@/constants/design";
 
@@ -450,6 +451,14 @@ function EventModal({
               onChangeText={setLocation}
               returnKeyType="done"
             />
+            {location.trim() ? (
+              <Pressable
+                onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(location)}`)}
+                style={({ pressed }) => ({ marginBottom: 16, alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}
+              >
+                <Text style={{ fontSize: 13, color: C.PRIMARY, fontWeight: "600" }}>🗺️ Open in Maps →</Text>
+              </Pressable>
+            ) : <View style={{ marginBottom: 16 }} />}
 
             <Text style={modalInputLabel}>Date & time</Text>
             {Platform.OS === "web" ? (
@@ -922,7 +931,7 @@ function RoomDetailView({
               onPress={() => router.push(`/room/${room.slug}`)}
               style={({ pressed }) => ({ backgroundColor: C.BG, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8, opacity: pressed ? 0.7 : 1 })}
             >
-              <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>View →</Text>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>👁 Preview</Text>
             </Pressable>
           </View>
 
