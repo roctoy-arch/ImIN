@@ -292,14 +292,26 @@ function EditEventModal({
 // ─── MapPreviewCard ───────────────────────────────────────────────────────────
 
 function MapPreviewCard({ location }: { location: string }) {
+  const [mapError, setMapError] = useState(false);
+  const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${encodeURIComponent(location)}&zoom=15&size=600x200&maptype=mapnik&markers=${encodeURIComponent(location)},red`;
+
   return (
     <View style={{ backgroundColor: "#F0F0FF", borderRadius: 16, overflow: "hidden", marginTop: 4, marginBottom: 8 }}>
-      <View style={{ height: 120, alignItems: "center", justifyContent: "center", paddingHorizontal: 20 }}>
-        <Text style={{ fontSize: 36, marginBottom: 8 }}>📍</Text>
-        <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY, textAlign: "center" }} numberOfLines={2}>
-          {location}
-        </Text>
-      </View>
+      {!mapError ? (
+        <Image
+          source={{ uri: mapUrl }}
+          style={{ width: "100%", height: 160 }}
+          contentFit="cover"
+          onError={() => setMapError(true)}
+        />
+      ) : (
+        <View style={{ height: 120, alignItems: "center", justifyContent: "center", paddingHorizontal: 20 }}>
+          <Text style={{ fontSize: 36, marginBottom: 8 }}>📍</Text>
+          <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY, textAlign: "center" }} numberOfLines={2}>
+            {location}
+          </Text>
+        </View>
+      )}
       <View style={{ flexDirection: "row", borderTopWidth: 1, borderTopColor: "#DDD8FF" }}>
         <Pressable
           onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(location)}`)}

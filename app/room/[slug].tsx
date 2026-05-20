@@ -129,7 +129,7 @@ function BottomNav({
   bottomInset: number;
 }) {
   const posStyle = Platform.OS === "web"
-    ? { position: "fixed" as any, bottom: 8, left: 16, right: 16 }
+    ? ({ marginHorizontal: 16, marginBottom: 8 } as const)
     : { position: "absolute" as const, bottom: bottomInset + 8, left: 16, right: 16 };
 
   return (
@@ -526,7 +526,7 @@ export default function RoomScreen() {
   const coverUrl = (room.photos as any)?.[0]?.url ?? null;
 
   const webRootStyle = Platform.OS === "web"
-    ? ({ maxWidth: 480, alignSelf: "center" as const, width: "100%" as const, minHeight: "100dvh" as any } as const)
+    ? ({ maxWidth: 480, alignSelf: "center" as const, width: "100%" as const, height: "100dvh" as any } as const)
     : {};
   const webContentStyle = Platform.OS === "web"
     ? ({ maxWidth: 480, alignSelf: "center" as const, width: "100%" as const } as const)
@@ -564,7 +564,7 @@ export default function RoomScreen() {
         ) : null}
 
         {/* Tab content */}
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, ...(Platform.OS === "web" ? { overflow: "hidden" as const } : {}) }}>
           {activeTab === "home" && (
             <HomeTab
               events={events}
