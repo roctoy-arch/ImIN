@@ -7,6 +7,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import Head from "expo-router/head";
+import * as Linking from "expo-linking";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -17,6 +18,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -527,9 +529,36 @@ export default function EventDetailScreen() {
               📅 {formatDate(event.date)}
             </Text>
             {event.location ? (
-              <Text style={{ fontSize: 15, color: C.SECONDARY, marginBottom: 4 }}>
-                📍 {event.location}
-              </Text>
+              <Pressable
+                onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(event.location)}`)}
+                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+              >
+                <Text style={{ fontSize: 15, color: C.SECONDARY, marginBottom: 4 }}>
+                  📍 {event.location}
+                </Text>
+              </Pressable>
+            ) : null}
+            {event.location ? (
+              <View style={{ backgroundColor: C.BG, borderRadius: 16, padding: 16, marginTop: 4, marginBottom: 8 }}>
+                <View style={{ height: 80, backgroundColor: C.PLACEHOLDER_BG, borderRadius: 10, alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <Text style={{ fontSize: 28 }}>🗺️</Text>
+                  <Text style={{ fontSize: 12, color: C.SECONDARY, marginTop: 4 }} numberOfLines={1}>{event.location}</Text>
+                </View>
+                <View style={{ flexDirection: "row", gap: 8 }}>
+                  <Pressable
+                    onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(event.location)}`)}
+                    style={({ pressed }) => ({ flex: 1, backgroundColor: C.WHITE, borderRadius: 10, paddingVertical: 10, alignItems: "center", ...SHADOW, opacity: pressed ? 0.7 : 1 })}
+                  >
+                    <Text style={{ fontSize: 13, fontWeight: "600", color: C.PRIMARY }}>📍 View on Maps</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => Linking.openURL(`https://maps.google.com/dir/?api=1&destination=${encodeURIComponent(event.location)}`)}
+                    style={({ pressed }) => ({ flex: 1, backgroundColor: C.PRIMARY, borderRadius: 10, paddingVertical: 10, alignItems: "center", opacity: pressed ? 0.7 : 1 })}
+                  >
+                    <Text style={{ fontSize: 13, fontWeight: "600", color: "white" }}>🧭 Get Directions</Text>
+                  </Pressable>
+                </View>
+              </View>
             ) : null}
             {event.description ? (
               <Text style={{ fontSize: 15, color: C.PRIMARY, marginTop: 12, lineHeight: 22 }}>
@@ -603,6 +632,27 @@ export default function EventDetailScreen() {
                 </Text>
               </Pressable>
             )}
+
+            {/* Share Event / QR Code */}
+            <View style={{ marginTop: 28, backgroundColor: C.BG, borderRadius: 20, padding: 20, alignItems: "center" }}>
+              <Text style={{ fontSize: 13, fontWeight: "700", color: C.PRIMARY, marginBottom: 16, letterSpacing: 0.8, textTransform: "uppercase" }}>
+                Share Event
+              </Text>
+              <Image
+                source={{ uri: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`${APP_URL}/event/${eventId}`)}&color=1C242B&bgcolor=EEEEFF` }}
+                style={{ width: 180, height: 180, borderRadius: 12 }}
+                contentFit="contain"
+              />
+              <Text style={{ fontSize: 12, color: C.MUTED, marginTop: 10, textAlign: "center" }}>
+                Scan to view & sign up for this event
+              </Text>
+              <Pressable
+                onPress={() => { try { Share.share({ message: `Join ${event.title} on I'm IN! 👇 ${APP_URL}/event/${eventId}` }); } catch {} }}
+                style={({ pressed }) => ({ marginTop: 14, backgroundColor: C.PRIMARY, borderRadius: 50, paddingHorizontal: 28, paddingVertical: 12, opacity: pressed ? 0.7 : 1 })}
+              >
+                <Text style={{ color: "white", fontWeight: "700", fontSize: 14 }}>Share Event Link</Text>
+              </Pressable>
+            </View>
 
             {/* Who's in */}
             <View style={{ marginTop: 32 }}>

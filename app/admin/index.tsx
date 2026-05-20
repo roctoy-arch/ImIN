@@ -659,11 +659,13 @@ function EventRow({
   onEdit,
   onDelete,
   onShare,
+  onQr,
 }: {
   event: EventWithSignups;
   onEdit: () => void;
   onDelete: () => void;
   onShare: () => void;
+  onQr: () => void;
 }) {
   const count = event.signups?.length ?? 0;
   const category = (event as any).category as string | undefined;
@@ -699,12 +701,58 @@ function EventRow({
           <Pressable onPress={onShare} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
             <Text style={{ fontSize: 14, fontWeight: "600", color: C.SECONDARY }}>Share</Text>
           </Pressable>
+          <Pressable onPress={onQr} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+            <Text style={{ fontSize: 14, fontWeight: "600", color: C.SECONDARY }}>QR</Text>
+          </Pressable>
           <Pressable onPress={onDelete} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
             <Text style={{ fontSize: 14, fontWeight: "600", color: C.ACCENT }}>Delete</Text>
           </Pressable>
         </View>
       </View>
     </View>
+  );
+}
+
+// ─── QrModal ─────────────────────────────────────────────────────────────────
+
+function QrModal({
+  eventId,
+  eventTitle,
+  onClose,
+}: {
+  eventId: string;
+  eventTitle: string;
+  onClose: () => void;
+}) {
+  const eventUrl = `${APP_URL}/event/${eventId}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(eventUrl)}&color=1C242B&bgcolor=EEEEFF`;
+  return (
+    <Modal visible animationType="fade" transparent statusBarTranslucent onRequestClose={onClose}>
+      <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", alignItems: "center", justifyContent: "center" }}>
+        <Pressable onPress={onClose} style={StyleSheet.absoluteFill} />
+        <View style={{ backgroundColor: C.WHITE, borderRadius: 24, padding: 28, alignItems: "center", width: 300, ...SHADOW }}>
+          <Text style={{ fontSize: 16, fontWeight: "800", color: C.PRIMARY, marginBottom: 4, textAlign: "center" }} numberOfLines={2}>
+            {eventTitle}
+          </Text>
+          <Text style={{ fontSize: 12, color: C.MUTED, marginBottom: 16 }}>Scan to view & sign up</Text>
+          <Image source={{ uri: qrUrl }} style={{ width: 200, height: 200, borderRadius: 10 }} contentFit="contain" />
+          <View style={{ flexDirection: "row", gap: 10, marginTop: 20, width: "100%" }}>
+            <Pressable
+              onPress={() => { try { Share.share({ message: `Join ${eventTitle} on I'm IN! 👇 ${eventUrl}` }); } catch {} }}
+              style={({ pressed }) => ({ flex: 1, backgroundColor: C.PRIMARY, borderRadius: 50, paddingVertical: 12, alignItems: "center", opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text style={{ color: "white", fontWeight: "700", fontSize: 13 }}>Share</Text>
+            </Pressable>
+            <Pressable
+              onPress={onClose}
+              style={({ pressed }) => ({ flex: 1, backgroundColor: C.BG, borderRadius: 50, paddingVertical: 12, alignItems: "center", opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text style={{ color: C.PRIMARY, fontWeight: "700", fontSize: 13 }}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -758,6 +806,8 @@ function RoomDetailView({
   const [postingAnn, setPostingAnn] = useState(false);
   const [copied, setCopied] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [showQrEventId, setShowQrEventId] = useState<string | null>(null);
+  const [showQrEventTitle, setShowQrEventTitle] = useState("");
 
   const roomUrl = `${APP_URL}/room/${room.slug}`;
   const coverUrl = (room.photos as any)?.[0]?.url ?? null;
@@ -930,6 +980,7 @@ function RoomDetailView({
                 onEdit={() => openEdit(event)}
                 onDelete={() => handleDelete(event.id, event.title)}
                 onShare={() => handleShareEvent(event)}
+                onQr={() => { setShowQrEventId(event.id); setShowQrEventTitle(event.title); }}
               />
             ))
           )}
@@ -977,6 +1028,13 @@ function RoomDetailView({
       </ScrollView>
 
       <EventModal visible={showModal} roomId={room.id} editEvent={editingEvent} onClose={() => setShowModal(false)} />
+      {showQrEventId && (
+        <QrModal
+          eventId={showQrEventId}
+          eventTitle={showQrEventTitle}
+          onClose={() => setShowQrEventId(null)}
+        />
+      )}
     </>
   );
 }
