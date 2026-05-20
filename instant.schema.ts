@@ -68,6 +68,10 @@ const _schema = i.schema({
       forward: { on: "events", has: "many", label: "signups" },
       reverse: { on: "signups", has: "one", label: "event" },
     },
+    roomPhotos: {
+      forward: { on: "rooms", has: "many", label: "photos" },
+      reverse: { on: "$files", has: "many", label: "rooms" },
+    },
     eventPhotos: {
       forward: { on: "events", has: "many", label: "photos" },
       reverse: { on: "$files", has: "many", label: "events" },

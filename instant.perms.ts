@@ -45,6 +45,11 @@ const rules = {
       delete: "auth.id != null",
     },
   },
+  $users: {
+    allow: {
+      update: "auth.id == data.id",
+    },
+  },
 } satisfies InstantRules;
 
 export default rules;
