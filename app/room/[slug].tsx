@@ -6,6 +6,7 @@ import { InstaQLEntity } from "@instantdb/react-native";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import Head from "expo-router/head";
+import * as Linking from "expo-linking";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -30,12 +31,12 @@ type RoomWithAll = InstaQLEntity<
 >;
 type EventWithSignupsAndPhotos = InstaQLEntity<AppSchema, "events", { signups: {}; photos: {} }>;
 
-type TabId = "home" | "calendar" | "whos-in" | "photos";
+type TabId = "home" | "map" | "whos-in" | "photos";
 
 const TABS: { id: TabId; label: string; icon: string }[] = [
-  { id: "home", label: "Home", icon: "🏠" },
-  { id: "calendar", label: "Calendar", icon: "📅" },
-  { id: "whos-in", label: "Who's In", icon: "👥" },
+  { id: "home", label: "Events", icon: "🏠" },
+  { id: "map", label: "Map", icon: "🗺️" },
+  { id: "whos-in", label: "Members", icon: "👥" },
   { id: "photos", label: "Photos", icon: "📸" },
 ];
 
@@ -127,24 +128,28 @@ function BottomNav({
   onSelect: (id: TabId) => void;
   bottomInset: number;
 }) {
+  const posStyle = Platform.OS === "web"
+    ? { position: "fixed" as any, bottom: 8, left: 16, right: 16 }
+    : { position: "absolute" as const, bottom: bottomInset + 8, left: 16, right: 16 };
+
   return (
     <View
-      style={{
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: C.PRIMARY,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        paddingBottom: bottomInset,
-        paddingTop: 10,
-        paddingHorizontal: 8,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-around",
-        minHeight: 62,
-      }}
+      style={[
+        posStyle,
+        {
+          backgroundColor: C.PRIMARY,
+          borderRadius: 40,
+          paddingVertical: 6,
+          paddingHorizontal: 6,
+          flexDirection: "row",
+          zIndex: 100,
+          elevation: 10,
+          shadowColor: "#000",
+          shadowOpacity: 0.2,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 4 },
+        },
+      ]}
     >
       {TABS.map((tab) => {
         const active = tab.id === activeTab;
@@ -153,21 +158,33 @@ function BottomNav({
             key={tab.id}
             onPress={() => onSelect(tab.id)}
             style={({ pressed }) => ({
+              flex: 1,
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: active ? C.WHITE : "transparent",
-              borderRadius: 50,
-              paddingHorizontal: active ? 16 : 12,
-              paddingVertical: 8,
-              flexDirection: "row",
-              gap: 6,
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <Text style={{ fontSize: 16 }}>{tab.icon}</Text>
-            {active && (
-              <Text style={{ fontSize: 13, fontWeight: "700", color: C.PRIMARY }}>{tab.label}</Text>
-            )}
+            <View
+              style={{
+                backgroundColor: active ? C.WHITE : "transparent",
+                borderRadius: 28,
+                paddingHorizontal: 12,
+                paddingVertical: 7,
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              <Text style={{ fontSize: 17 }}>{tab.icon}</Text>
+              <Text
+                style={{
+                  fontSize: 10,
+                  fontWeight: "700",
+                  color: active ? C.PRIMARY : "rgba(255,255,255,0.75)",
+                }}
+              >
+                {tab.label}
+              </Text>
+            </View>
           </Pressable>
         );
       })}
@@ -195,7 +212,7 @@ function HomeTab({
     return (
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 80 + bottomInset, ...webStyle }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 + bottomInset, ...webStyle }}
       >
         {showBanner && (
           <View style={{ marginHorizontal: 16, marginTop: 12, backgroundColor: "#FFFBEB", borderColor: "#FDE68A", borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, flexDirection: "row", alignItems: "flex-start" }}>
@@ -226,7 +243,7 @@ function HomeTab({
       renderItem={({ item }) => <EventCard event={item} />}
       contentInsetAdjustmentBehavior="automatic"
       style={{ flex: 1 }}
-      contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: 80 + bottomInset, ...webStyle }}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: 100 + bottomInset, ...webStyle }}
       ListHeaderComponent={
         showBanner ? (
           <View style={{ backgroundColor: "#FFFBEB", borderColor: "#FDE68A", borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 12, flexDirection: "row", alignItems: "flex-start" }}>
@@ -242,12 +259,9 @@ function HomeTab({
   );
 }
 
-// ─── CalendarTab ─────────────────────────────────────────────────────────────
+// ─── MapTab ───────────────────────────────────────────────────────────────────
 
-const DAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-function CalendarTab({
+function MapTab({
   events,
   bottomInset,
   webStyle,
@@ -257,137 +271,48 @@ function CalendarTab({
   webStyle: object;
 }) {
   const router = useRouter();
-  const now = new Date();
-  const [calYear, setCalYear] = useState(now.getFullYear());
-  const [calMonth, setCalMonth] = useState(now.getMonth());
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
-
-  const firstDayOfWeek = new Date(calYear, calMonth, 1).getDay();
-  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-  const totalCells = Math.ceil((firstDayOfWeek + daysInMonth) / 7) * 7;
-
-  const eventsByDay: Record<number, EventWithSignupsAndPhotos[]> = {};
-  for (const e of events) {
-    const d = new Date(e.date);
-    if (d.getFullYear() === calYear && d.getMonth() === calMonth) {
-      const day = d.getDate();
-      if (!eventsByDay[day]) eventsByDay[day] = [];
-      eventsByDay[day].push(e);
-    }
-  }
-
-  const selectedEvents = selectedDay ? (eventsByDay[selectedDay] ?? []) : [];
-
-  function prevMonth() {
-    if (calMonth === 0) { setCalYear(calYear - 1); setCalMonth(11); }
-    else setCalMonth(calMonth - 1);
-    setSelectedDay(null);
-  }
-  function nextMonth() {
-    if (calMonth === 11) { setCalYear(calYear + 1); setCalMonth(0); }
-    else setCalMonth(calMonth + 1);
-    setSelectedDay(null);
-  }
-
-  const isToday = (day: number) =>
-    day === now.getDate() && calMonth === now.getMonth() && calYear === now.getFullYear();
+  const eventsWithLocation = events.filter((e) => !!e.location);
 
   return (
     <ScrollView
       style={{ flex: 1 }}
-      contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 80 + bottomInset, ...webStyle }}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 100 + bottomInset, ...webStyle }}
     >
-      {/* Month nav */}
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <Pressable onPress={prevMonth} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, padding: 8 })}>
-          <Text style={{ fontSize: 20, color: C.PRIMARY }}>‹</Text>
-        </Pressable>
-        <Text style={{ fontSize: 18, fontWeight: "800", color: C.PRIMARY }}>
-          {MONTH_NAMES[calMonth]} {calYear}
-        </Text>
-        <Pressable onPress={nextMonth} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, padding: 8 })}>
-          <Text style={{ fontSize: 20, color: C.PRIMARY }}>›</Text>
-        </Pressable>
-      </View>
-
-      {/* Day headers */}
-      <View style={{ flexDirection: "row", marginBottom: 4 }}>
-        {DAY_HEADERS.map((d) => (
-          <View key={d} style={{ flex: 1, alignItems: "center" }}>
-            <Text style={{ fontSize: 11, fontWeight: "600", color: C.MUTED }}>{d}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Day grid */}
-      <View style={{ flexDirection: "row", flexWrap: "wrap", backgroundColor: C.WHITE, borderRadius: 16, ...SHADOW, padding: 4 }}>
-        {Array.from({ length: totalCells }, (_, i) => {
-          const day = i - firstDayOfWeek + 1;
-          const valid = day >= 1 && day <= daysInMonth;
-          const hasEvents = valid && !!eventsByDay[day];
-          const isSelected = valid && selectedDay === day;
-          const today = valid && isToday(day);
-          return (
+      {eventsWithLocation.length === 0 ? (
+        <View style={{ alignItems: "center", paddingTop: 64, paddingHorizontal: 32 }}>
+          <Text style={{ fontSize: 40, marginBottom: 12 }}>🗺️</Text>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: C.PRIMARY }}>No locations yet</Text>
+          <Text style={{ fontSize: 14, color: C.SECONDARY, marginTop: 6, textAlign: "center" }}>
+            Events with locations will show up here
+          </Text>
+        </View>
+      ) : (
+        eventsWithLocation.map((event) => (
+          <View key={event.id} style={{ backgroundColor: "#F0F0FF", borderRadius: 16, marginBottom: 12, overflow: "hidden" }}>
             <Pressable
-              key={i}
-              onPress={() => valid ? setSelectedDay(isSelected ? null : day) : undefined}
-              style={{ width: `${100 / 7}%`, alignItems: "center", paddingVertical: 6 }}
+              onPress={() => router.push(`/event/${event.id}`)}
+              style={({ pressed }) => ({ padding: 16, opacity: pressed ? 0.85 : 1 })}
             >
-              <View
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: isSelected ? C.PRIMARY : today ? C.BG : "transparent",
-                }}
-              >
-                <Text style={{ fontSize: 14, fontWeight: today || isSelected ? "700" : "400", color: isSelected ? "white" : valid ? C.PRIMARY : "transparent" }}>
-                  {valid ? day : ""}
-                </Text>
-              </View>
-              {hasEvents && (
-                <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: isSelected ? C.WHITE : C.PRIMARY, marginTop: 2 }} />
-              )}
+              <Text style={{ fontSize: 15, fontWeight: "700", color: C.PRIMARY }}>{event.title}</Text>
+              <Text style={{ fontSize: 13, color: C.SECONDARY, marginTop: 4 }}>
+                📅 {formatDay(event.date)} · {formatTime(event.date)}
+              </Text>
+              <Text style={{ fontSize: 13, color: C.MUTED, marginTop: 4 }}>📍 {event.location}</Text>
             </Pressable>
-          );
-        })}
-      </View>
-
-      {/* Selected day events */}
-      <View style={{ marginTop: 20 }}>
-        {selectedDay === null ? (
-          <Text style={{ color: C.MUTED, textAlign: "center", fontSize: 14 }}>Tap a day to see events</Text>
-        ) : selectedEvents.length === 0 ? (
-          <Text style={{ color: C.MUTED, textAlign: "center", fontSize: 14 }}>No events on this day</Text>
-        ) : (
-          <>
-            <Text style={{ fontSize: 13, fontWeight: "700", color: C.MUTED, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
-              {MONTH_NAMES[calMonth]} {selectedDay}
-            </Text>
-            {selectedEvents.map((e) => (
-              <Pressable
-                key={e.id}
-                onPress={() => router.push(`/event/${e.id}`)}
-                style={({ pressed }) => ({
-                  backgroundColor: C.WHITE,
-                  borderRadius: 14,
-                  padding: 16,
-                  marginBottom: 8,
-                  ...SHADOW,
-                  opacity: pressed ? 0.85 : 1,
-                })}
-              >
-                <Text style={{ fontSize: 16, fontWeight: "700", color: C.PRIMARY }}>{e.title}</Text>
-                <Text style={{ fontSize: 13, color: C.SECONDARY, marginTop: 4 }}>
-                  🕐 {formatTime(e.date)}{e.location ? ` · 📍 ${e.location}` : ""}
-                </Text>
-              </Pressable>
-            ))}
-          </>
-        )}
-      </View>
+            <Pressable
+              onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(event.location!)}`)}
+              style={({ pressed }) => ({
+                backgroundColor: C.PRIMARY,
+                paddingVertical: 12,
+                alignItems: "center",
+                opacity: pressed ? 0.8 : 1,
+              })}
+            >
+              <Text style={{ color: "white", fontSize: 14, fontWeight: "700" }}>Open in Google Maps →</Text>
+            </Pressable>
+          </View>
+        ))
+      )}
     </ScrollView>
   );
 }
@@ -411,7 +336,7 @@ function WhosInTab({
   return (
     <ScrollView
       style={{ flex: 1 }}
-      contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 80 + bottomInset, ...webStyle }}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 100 + bottomInset, ...webStyle }}
     >
       <View style={{ paddingVertical: 12 }}>
         <Text style={{ fontSize: 15, color: C.SECONDARY }}>
@@ -494,7 +419,7 @@ function PhotosTab({
           keyExtractor={(item) => item.id}
           numColumns={3}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 80 + bottomInset, gap: 2 }}
+          contentContainerStyle={{ paddingBottom: 100 + bottomInset, gap: 2 }}
           columnWrapperStyle={{ gap: 2 }}
           renderItem={({ item }) => (
             <Pressable
@@ -648,8 +573,8 @@ export default function RoomScreen() {
               webStyle={webContentStyle}
             />
           )}
-          {activeTab === "calendar" && (
-            <CalendarTab events={events} bottomInset={bottomInset} webStyle={webContentStyle} />
+          {activeTab === "map" && (
+            <MapTab events={events} bottomInset={bottomInset} webStyle={webContentStyle} />
           )}
           {activeTab === "whos-in" && (
             <WhosInTab events={events} bottomInset={bottomInset} webStyle={webContentStyle} />
@@ -668,7 +593,7 @@ export default function RoomScreen() {
             onPress={() => router.push("/admin")}
             style={({ pressed }) => ({
               position: "absolute",
-              bottom: 72 + bottomInset + 16,
+              bottom: 96 + bottomInset,
               right: 24,
               width: 48,
               height: 48,
