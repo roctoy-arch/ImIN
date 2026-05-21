@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { C } from "@/constants/design";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -85,10 +85,30 @@ export default function AdminLoginScreen() {
     );
   }
 
+  const canGoBack = router.canGoBack();
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={[
+    <>
+      <Stack.Screen
+        options={{
+          headerTitle: () => (
+            <Text style={{ fontSize: 17, fontWeight: "700", color: "#1C242B" }}>Admin Login</Text>
+          ),
+          headerLeft: () => (
+            <Pressable
+              onPress={() => router.push("/")}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, flexDirection: "row" as const, alignItems: "center" as const, gap: 6, paddingLeft: 4 })}
+            >
+              <Text style={{ fontSize: 18 }}>🏠</Text>
+              <Text style={{ fontSize: 13, fontWeight: "700", color: "#1C242B", fontStyle: "italic" as const }}>I'm IN</Text>
+            </Pressable>
+          ),
+        }}
+      />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={[
         { flex: 1, backgroundColor: "white" },
         Platform.OS === "web"
           ? ({
@@ -192,5 +212,6 @@ export default function AdminLoginScreen() {
         )}
       </View>
     </KeyboardAvoidingView>
+    </>
   );
 }

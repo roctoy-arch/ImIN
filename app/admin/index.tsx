@@ -879,11 +879,17 @@ function RoomDetailView({
   return (
     <>
       <ScrollView style={{ flex: 1, backgroundColor: C.WHITE }}>
-        {/* Header: back + avatar + sign out */}
+        {/* Header: brand + back + title + avatar */}
         <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: C.BORDER }}>
+          <Pressable
+            onPress={() => router.push("/")}
+            style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, flexDirection: "row", alignItems: "center", gap: 6, marginRight: 16 })}
+          >
+            <Text style={{ fontSize: 18 }}>🏠</Text>
+            <Text style={{ fontSize: 13, fontWeight: "700", color: "#1C242B", fontStyle: "italic" }}>I'm IN</Text>
+          </Pressable>
           <Pressable onPress={onBack} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, flexDirection: "row", alignItems: "center", gap: 4, marginRight: 12 })}>
-            <Text style={{ fontSize: 20, color: C.PRIMARY }}>←</Text>
-            <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>Rooms</Text>
+            <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>← Rooms</Text>
           </Pressable>
           <Text style={{ flex: 1, fontSize: 16, fontWeight: "700", color: C.PRIMARY }} numberOfLines={1}>{room.name}</Text>
           <AdminAvatar user={user} onUpload={onUploadAvatar} />
@@ -1065,10 +1071,31 @@ function RoomsListView({
   onUploadAvatar: () => void;
   onSignOut: () => void;
 }) {
+  const router = useRouter();
+
+  function handleDeleteRoom(roomId: string, roomName: string) {
+    const doDelete = () => db.transact(db.tx.rooms[roomId].delete());
+    if (Platform.OS !== "web") {
+      Alert.alert("Delete Room", `Delete "${roomName}"? This cannot be undone.`, [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: doDelete },
+      ]);
+    } else if ((window as any).confirm(`Delete "${roomName}"? This cannot be undone.`)) {
+      doDelete();
+    }
+  }
+
   return (
     <ScrollView style={{ flex: 1, backgroundColor: C.WHITE }} contentContainerStyle={{ paddingBottom: 40 }}>
       {/* Header */}
       <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: C.BORDER }}>
+        <Pressable
+          onPress={() => router.push("/")}
+          style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, flexDirection: "row", alignItems: "center", gap: 6, marginRight: 16 })}
+        >
+          <Text style={{ fontSize: 18 }}>🏠</Text>
+          <Text style={{ fontSize: 13, fontWeight: "700", color: "#1C242B", fontStyle: "italic" }}>I'm IN</Text>
+        </Pressable>
         <AdminAvatar user={user} onUpload={onUploadAvatar} />
         <Text style={{ flex: 1, fontSize: 20, fontWeight: "800", color: C.PRIMARY, marginLeft: 12 }}>My Rooms</Text>
         <Pressable
@@ -1109,32 +1136,55 @@ function RoomsListView({
             const coverUrl = (room.photos as any)?.[0]?.url ?? null;
 
             return (
-              <Pressable
+              <View
                 key={room.id}
-                onPress={() => onSelectRoom(room.id)}
-                style={({ pressed }) => ({
+                style={{
                   backgroundColor: C.WHITE,
                   borderRadius: 16,
                   ...SHADOW,
                   marginBottom: 12,
                   overflow: "hidden",
-                  transform: [{ scale: pressed ? 0.98 : 1 }],
-                })}
+                }}
               >
                 {coverUrl ? (
                   <Image source={{ uri: coverUrl }} style={{ height: 100, width: "100%" }} contentFit="cover" />
                 ) : null}
                 <View style={{ padding: 20 }}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                    <Text style={{ fontSize: 20, fontWeight: "800", color: C.PRIMARY }}>{room.name}</Text>
-                    <Text style={{ fontSize: 20, color: C.MUTED }}>→</Text>
-                  </View>
+                  <Text style={{ fontSize: 20, fontWeight: "800", color: C.PRIMARY }}>{room.name}</Text>
                   <Text style={{ fontSize: 13, color: C.MUTED, marginTop: 2 }}>@{room.slug}</Text>
-                  <Text style={{ fontSize: 13, color: C.SECONDARY, marginTop: 8 }}>
+                  <Text style={{ fontSize: 13, color: C.SECONDARY, marginTop: 6 }}>
                     {eventCount} event{eventCount !== 1 ? "s" : ""} · {memberCount} member{memberCount !== 1 ? "s" : ""}
                   </Text>
+                  <View style={{ flexDirection: "row", gap: 8, marginTop: 16 }}>
+                    <Pressable
+                      onPress={() => onSelectRoom(room.id)}
+                      style={({ pressed }) => ({
+                        flex: 1,
+                        backgroundColor: C.PRIMARY,
+                        borderRadius: 50,
+                        paddingVertical: 12,
+                        alignItems: "center",
+                        opacity: pressed ? 0.8 : 1,
+                      })}
+                    >
+                      <Text style={{ color: "white", fontWeight: "700", fontSize: 14 }}>Manage →</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => handleDeleteRoom(room.id, room.name)}
+                      style={({ pressed }) => ({
+                        backgroundColor: "#FEF2F2",
+                        borderRadius: 50,
+                        paddingHorizontal: 20,
+                        paddingVertical: 12,
+                        alignItems: "center",
+                        opacity: pressed ? 0.8 : 1,
+                      })}
+                    >
+                      <Text style={{ color: C.ACCENT, fontWeight: "700", fontSize: 14 }}>Delete</Text>
+                    </Pressable>
+                  </View>
                 </View>
-              </Pressable>
+              </View>
             );
           })}
         </View>

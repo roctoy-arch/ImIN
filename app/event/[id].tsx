@@ -356,6 +356,7 @@ function MapPreviewCard({ location }: { location: string }) {
 export default function EventDetailScreen() {
   const { id: eventId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const canGoBack = router.canGoBack();
   const [uploading, setUploading] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [showEdit, setShowEdit] = useState(false);
@@ -518,20 +519,17 @@ export default function EventDetailScreen() {
       </Head>
       <Stack.Screen
         options={{
-          title: event.title,
+          headerTitle: () => (
+            <Text style={{ fontSize: 17, fontWeight: "700", color: "#1C242B" }}>{event.title}</Text>
+          ),
           headerLeft: () => (
             <Pressable
-              onPress={() => router.back()}
+              onPress={() => router.push("/")}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              style={({ pressed }) => ({
-                opacity: pressed ? 0.5 : 1,
-                flexDirection: "row" as const,
-                alignItems: "center" as const,
-                gap: 4,
-              })}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, flexDirection: "row" as const, alignItems: "center" as const, gap: 6, paddingLeft: 4 })}
             >
-              <Text style={{ fontSize: 20, color: C.PRIMARY }}>←</Text>
-              <Text style={{ fontSize: 16, color: C.PRIMARY, fontWeight: "500" }}>Back</Text>
+              <Text style={{ fontSize: 18 }}>🏠</Text>
+              <Text style={{ fontSize: 13, fontWeight: "700", color: "#1C242B", fontStyle: "italic" as const }}>I'm IN</Text>
             </Pressable>
           ),
         }}
