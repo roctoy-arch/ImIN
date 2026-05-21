@@ -11,6 +11,7 @@ const _schema = i.schema({
     $users: i.entity({
       email: i.string().unique().indexed().optional(),
       imageURL: i.string().optional(),
+      name: i.string().optional(),
       type: i.string().optional(),
     }),
     rooms: i.entity({

@@ -793,6 +793,103 @@ function AdminAvatar({ user, onUpload }: { user: { id: string; email: string | n
   );
 }
 
+// ─── ProfileModal ─────────────────────────────────────────────────────────────
+
+function ProfileModal({
+  visible,
+  user,
+  onClose,
+  onUploadPhoto,
+}: {
+  visible: boolean;
+  user: { id: string; email: string | null; imageURL?: string | null };
+  onClose: () => void;
+  onUploadPhoto: () => void;
+}) {
+  const [displayName, setDisplayName] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (visible) setDisplayName((user as any).name ?? "");
+  }, [visible]);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await db.transact(db.tx.$users[user.id].update({ name: displayName.trim() }));
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const initials = getAdminInitials(user.email ?? "");
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent statusBarTranslucent>
+      <KeyboardAvoidingView style={styles.kavFlex} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <Pressable style={styles.backdrop} onPress={onClose} />
+        <View style={styles.sheet}>
+          <ScrollView bounces={false} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.sheetContent}>
+            <Text style={{ fontSize: 22, fontWeight: "800", color: C.PRIMARY, marginBottom: 24 }}>My Profile</Text>
+
+            <View style={{ alignItems: "center", marginBottom: 24 }}>
+              <Pressable
+                onPress={onUploadPhoto}
+                style={({ pressed }) => ({
+                  width: 88,
+                  height: 88,
+                  borderRadius: 44,
+                  backgroundColor: "#1C242B",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                  opacity: pressed ? 0.8 : 1,
+                  marginBottom: 12,
+                })}
+              >
+                {user.imageURL ? (
+                  <Image source={{ uri: user.imageURL }} style={{ width: 88, height: 88 }} contentFit="cover" />
+                ) : (
+                  <Text style={{ color: "white", fontSize: 28, fontWeight: "700" }}>{initials}</Text>
+                )}
+              </Pressable>
+              <Pressable onPress={onUploadPhoto} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+                <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>Change Photo</Text>
+              </Pressable>
+            </View>
+
+            <Text style={{ fontSize: 11, fontWeight: "600", color: C.MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8 }}>Email</Text>
+            <View style={{ backgroundColor: C.BG, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 16 }}>
+              <Text style={{ fontSize: 16, color: C.MUTED }}>{user.email ?? "—"}</Text>
+            </View>
+
+            <Text style={{ fontSize: 11, fontWeight: "600", color: C.MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8 }}>Name</Text>
+            <TextInput
+              style={{ backgroundColor: C.INPUT, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: C.PRIMARY, marginBottom: 24 }}
+              placeholder="Your display name"
+              placeholderTextColor={C.MUTED}
+              value={displayName}
+              onChangeText={setDisplayName}
+            />
+
+            <Pressable
+              onPress={handleSave}
+              disabled={saving}
+              style={({ pressed }) => ({ backgroundColor: C.PRIMARY, borderRadius: 50, paddingVertical: 18, alignItems: "center", marginBottom: 4, opacity: pressed || saving ? 0.7 : 1 })}
+            >
+              <Text style={{ color: "white", fontWeight: "700", fontSize: 17 }}>{saving ? "Saving..." : "Save Changes"}</Text>
+            </Pressable>
+            <Pressable onPress={onClose} style={{ alignItems: "center", paddingVertical: 12 }}>
+              <Text style={{ color: C.SECONDARY, fontSize: 15 }}>Cancel</Text>
+            </Pressable>
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
 // ─── RoomDetailView ───────────────────────────────────────────────────────────
 
 function RoomDetailView({
@@ -1072,6 +1169,8 @@ function RoomsListView({
   onSignOut: () => void;
 }) {
   const router = useRouter();
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const initials = getAdminInitials(user.email ?? "");
 
   function handleDeleteRoom(roomId: string, roomName: string) {
     const doDelete = () => db.transact(db.tx.rooms[roomId].delete());
@@ -1086,49 +1185,55 @@ function RoomsListView({
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: C.WHITE }} contentContainerStyle={{ paddingBottom: 40 }}>
-      {/* Header */}
-      <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: C.BORDER }}>
-        <Pressable
-          onPress={() => router.push("/")}
-          style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, flexDirection: "row", alignItems: "center", gap: 6, marginRight: 16 })}
-        >
-          <Text style={{ fontSize: 18 }}>🏠</Text>
-          <Text style={{ fontSize: 13, fontWeight: "700", color: "#1C242B", fontStyle: "italic" }}>I'm IN</Text>
-        </Pressable>
-        <AdminAvatar user={user} onUpload={onUploadAvatar} />
-        <Text style={{ flex: 1, fontSize: 20, fontWeight: "800", color: C.PRIMARY, marginLeft: 12 }}>My Rooms</Text>
-        <Pressable
-          onPress={onSignOut}
-          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, marginRight: 12 })}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "600", color: C.SECONDARY }}>Sign Out</Text>
-        </Pressable>
-        <Pressable
-          onPress={onCreateRoom}
-          style={({ pressed }) => ({ backgroundColor: C.PRIMARY, borderRadius: 50, paddingHorizontal: 16, paddingVertical: 10, opacity: pressed ? 0.8 : 1 })}
-        >
-          <Text style={{ color: "white", fontWeight: "700", fontSize: 14 }}>+ New Room</Text>
-        </Pressable>
-      </View>
-
-      {rooms.length === 0 ? (
-        <View style={{ alignItems: "center", paddingTop: 80, paddingHorizontal: 32 }}>
-          <Text style={{ fontSize: 52 }}>🏟️</Text>
-          <Text style={{ fontSize: 22, fontWeight: "800", color: C.PRIMARY, marginTop: 16 }}>Welcome to I'm IN</Text>
-          <Text style={{ fontSize: 15, color: C.SECONDARY, marginTop: 8, textAlign: "center", lineHeight: 22 }}>
-            Create your first room to get started.{"\n"}Share the link with your members.
-          </Text>
-          <Pressable
-            onPress={onCreateRoom}
-            style={({ pressed }) => ({ backgroundColor: C.PRIMARY, borderRadius: 50, paddingHorizontal: 28, paddingVertical: 16, marginTop: 24, opacity: pressed ? 0.8 : 1 })}
-          >
-            <Text style={{ color: "white", fontWeight: "700", fontSize: 16 }}>Create a Room →</Text>
+    <>
+      <ScrollView style={{ flex: 1, backgroundColor: C.WHITE }} contentContainerStyle={{ paddingBottom: 40 }}>
+        {/* Header – 3 columns */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: "#F0F0F0" }}>
+          <Pressable onPress={() => router.push("/")} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>
+            <Text style={{ fontSize: 24, color: "#1C242B" }}>⌂</Text>
           </Pressable>
+
+          <Text style={{ fontSize: 18, fontWeight: "900", fontStyle: "italic", color: "#1C242B" }}>I'm IN</Text>
+
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Pressable
+              onPress={() => setShowProfileModal(true)}
+              style={({ pressed }) => ({
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: "#1C242B",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+                opacity: pressed ? 0.8 : 1,
+              })}
+            >
+              {user.imageURL ? (
+                <Image source={{ uri: user.imageURL }} style={{ width: 48, height: 48 }} contentFit="cover" />
+              ) : (
+                <Text style={{ color: "white", fontSize: 15, fontWeight: "700" }}>{initials}</Text>
+              )}
+            </Pressable>
+            <Pressable onPress={onSignOut} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+              <Text style={{ fontSize: 12, color: C.SECONDARY }}>Sign Out</Text>
+            </Pressable>
+          </View>
         </View>
-      ) : (
-        <View style={{ paddingHorizontal: 16, paddingTop: 20 }}>
-          {rooms.map((room) => {
+
+        {/* Section title */}
+        <Text style={{ fontSize: 22, fontWeight: "700", color: C.PRIMARY, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 }}>My Rooms</Text>
+
+        {rooms.length === 0 ? (
+          <View style={{ alignItems: "center", paddingTop: 60, paddingHorizontal: 32 }}>
+            <Text style={{ fontSize: 52 }}>🏟️</Text>
+            <Text style={{ fontSize: 22, fontWeight: "800", color: C.PRIMARY, marginTop: 16 }}>Welcome to I'm IN</Text>
+            <Text style={{ fontSize: 15, color: C.SECONDARY, marginTop: 8, textAlign: "center", lineHeight: 22 }}>
+              Create your first room to get started.{"\n"}Share the link with your members.
+            </Text>
+          </View>
+        ) : (
+          rooms.map((room) => {
             const eventCount = room.events?.length ?? 0;
             const memberCount = new Set(
               (room.events ?? []).flatMap((e) => (e.signups ?? []).map((s) => s.name))
@@ -1142,6 +1247,8 @@ function RoomsListView({
                   backgroundColor: C.WHITE,
                   borderRadius: 16,
                   ...SHADOW,
+                  margin: 16,
+                  marginTop: 0,
                   marginBottom: 12,
                   overflow: "hidden",
                 }}
@@ -1150,46 +1257,64 @@ function RoomsListView({
                   <Image source={{ uri: coverUrl }} style={{ height: 100, width: "100%" }} contentFit="cover" />
                 ) : null}
                 <View style={{ padding: 20 }}>
-                  <Text style={{ fontSize: 20, fontWeight: "800", color: C.PRIMARY }}>{room.name}</Text>
+                  <Text style={{ fontSize: 18, fontWeight: "700", color: C.PRIMARY }}>{room.name}</Text>
                   <Text style={{ fontSize: 13, color: C.MUTED, marginTop: 2 }}>@{room.slug}</Text>
                   <Text style={{ fontSize: 13, color: C.SECONDARY, marginTop: 6 }}>
                     {eventCount} event{eventCount !== 1 ? "s" : ""} · {memberCount} member{memberCount !== 1 ? "s" : ""}
                   </Text>
-                  <View style={{ flexDirection: "row", gap: 8, marginTop: 16 }}>
-                    <Pressable
-                      onPress={() => onSelectRoom(room.id)}
-                      style={({ pressed }) => ({
-                        flex: 1,
-                        backgroundColor: C.PRIMARY,
-                        borderRadius: 50,
-                        paddingVertical: 12,
-                        alignItems: "center",
-                        opacity: pressed ? 0.8 : 1,
-                      })}
-                    >
-                      <Text style={{ color: "white", fontWeight: "700", fontSize: 14 }}>Manage →</Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={() => handleDeleteRoom(room.id, room.name)}
-                      style={({ pressed }) => ({
-                        backgroundColor: "#FEF2F2",
-                        borderRadius: 50,
-                        paddingHorizontal: 20,
-                        paddingVertical: 12,
-                        alignItems: "center",
-                        opacity: pressed ? 0.8 : 1,
-                      })}
-                    >
-                      <Text style={{ color: C.ACCENT, fontWeight: "700", fontSize: 14 }}>Delete</Text>
-                    </Pressable>
-                  </View>
+                  <Pressable
+                    onPress={() => onSelectRoom(room.id)}
+                    style={({ pressed }) => ({
+                      backgroundColor: "#1C242B",
+                      borderRadius: 12,
+                      paddingVertical: 14,
+                      alignItems: "center",
+                      marginTop: 12,
+                      opacity: pressed ? 0.8 : 1,
+                    })}
+                  >
+                    <Text style={{ color: "white", fontWeight: "700", fontSize: 15 }}>Manage →</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => handleDeleteRoom(room.id, room.name)}
+                    style={({ pressed }) => ({ alignItems: "center", paddingVertical: 10, opacity: pressed ? 0.6 : 1 })}
+                  >
+                    <Text style={{ color: C.ACCENT, fontSize: 14, fontWeight: "600" }}>Delete</Text>
+                  </Pressable>
                 </View>
               </View>
             );
+          })
+        )}
+
+        {/* Create New Room button */}
+        <Pressable
+          onPress={onCreateRoom}
+          style={({ pressed }) => ({
+            backgroundColor: "#1C242B",
+            borderRadius: 16,
+            paddingVertical: 18,
+            marginHorizontal: 16,
+            marginTop: 8,
+            marginBottom: 32,
+            alignItems: "center",
+            opacity: pressed ? 0.8 : 1,
           })}
-        </View>
-      )}
-    </ScrollView>
+        >
+          <Text style={{ color: "white", fontWeight: "700", fontSize: 16 }}>+ Create New Room</Text>
+        </Pressable>
+      </ScrollView>
+
+      <ProfileModal
+        visible={showProfileModal}
+        user={user}
+        onClose={() => setShowProfileModal(false)}
+        onUploadPhoto={() => {
+          setShowProfileModal(false);
+          onUploadAvatar();
+        }}
+      />
+    </>
   );
 }
 
