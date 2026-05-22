@@ -19,16 +19,18 @@ export default function HomeScreen() {
           color: C.PRIMARY,
           lineHeight: 76,
           textAlign: "center",
+          letterSpacing: -2,
         }}
       >
         {"I'm IN"}
       </Text>
       <Text
         style={{
-          fontSize: 16,
+          fontSize: 18,
+          fontWeight: "500",
           color: C.SECONDARY,
           textAlign: "center",
-          marginTop: 16,
+          marginTop: 12,
           lineHeight: 24,
         }}
       >
@@ -36,13 +38,24 @@ export default function HomeScreen() {
       </Text>
 
       <View style={{ position: "absolute", bottom: 52, alignItems: "center" }}>
-        <Text style={{ color: C.MUTED, fontSize: 13 }}>Are you an organizer?</Text>
+        <Text style={{ color: C.MUTED, fontSize: 13, marginBottom: 8 }}>Are you an organizer?</Text>
         <Pressable
           onPress={() => router.push("/admin")}
-          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, marginTop: 4, padding: 8 })}
+          style={({ pressed }) => ({
+            backgroundColor: C.WHITE,
+            borderRadius: 50,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            opacity: pressed ? 0.8 : 1,
+            shadowColor: "#000",
+            shadowOpacity: 0.06,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 2,
+          })}
         >
-          <Text style={{ color: C.PRIMARY, fontWeight: "600", fontSize: 14 }}>
-            Admin Area →
+          <Text style={{ color: C.PRIMARY, fontWeight: "700", fontSize: 14 }}>
+            Organizer Login
           </Text>
         </Pressable>
       </View>

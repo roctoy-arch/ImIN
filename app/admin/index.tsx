@@ -26,7 +26,7 @@ import {
 import * as Clipboard from "expo-clipboard";
 import * as Linking from "expo-linking";
 import { APP_URL } from "@/constants/config";
-import { C, CATEGORIES, SHADOW } from "@/constants/design";
+import { C, CATEGORIES, PILL_ACCENT, SHADOW } from "@/constants/design";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -380,6 +380,7 @@ function EventModal({
         <Pressable style={styles.backdrop} onPress={onClose} />
         <View style={styles.sheet}>
           <ScrollView bounces={false} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.sheetContent}>
+            <View style={{ width: 40, height: 4, backgroundColor: C.BORDER, borderRadius: 2, alignSelf: "center", marginBottom: 20 }} />
             <Text style={{ fontSize: 22, fontWeight: "800", color: C.PRIMARY, marginBottom: 24 }}>
               {editEvent ? "Edit Event" : "New Event"}
             </Text>
@@ -412,8 +413,7 @@ function EventModal({
                 <Image source={{ uri: coverPhotoUri }} style={{ width: "100%", height: 120 }} contentFit="cover" />
               ) : (
                 <View style={{ alignItems: "center" }}>
-                  <Text style={{ fontSize: 32 }}>📷</Text>
-                  <Text style={{ fontSize: 12, color: C.MUTED, marginTop: 4 }}>Tap to add cover photo</Text>
+                  <Text style={{ fontSize: 14, color: C.MUTED }}>+ Add Cover</Text>
                 </View>
               )}
             </Pressable>
@@ -424,7 +424,7 @@ function EventModal({
                 <Pressable
                   key={cat}
                   onPress={() => setCategory(cat === category ? "" : cat)}
-                  style={{ backgroundColor: category === cat ? C.PRIMARY : C.BG, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8 }}
+                  style={{ backgroundColor: category === cat ? C.PRIMARY : C.BG, borderRadius: 50, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: category === cat ? C.PRIMARY : C.BORDER }}
                 >
                   <Text style={{ color: category === cat ? "white" : C.PRIMARY, fontSize: 13, fontWeight: "600" }}>{cat}</Text>
                 </Pressable>
@@ -456,7 +456,7 @@ function EventModal({
                 onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(location)}`)}
                 style={({ pressed }) => ({ marginBottom: 16, alignSelf: "flex-start", opacity: pressed ? 0.6 : 1 })}
               >
-                <Text style={{ fontSize: 13, color: C.PRIMARY, fontWeight: "600" }}>🗺️ Open in Maps →</Text>
+                <Text style={{ fontSize: 13, color: C.PRIMARY, fontWeight: "600" }}>Open in Maps →</Text>
               </Pressable>
             ) : <View style={{ marginBottom: 16 }} />}
 
@@ -502,7 +502,7 @@ function EventModal({
                         <Pressable
                           key={rt.value}
                           onPress={() => setRecurrenceType(rt.value)}
-                          style={{ flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: "center", backgroundColor: recurrenceType === rt.value ? C.PRIMARY : C.BG }}
+                          style={{ flex: 1, paddingVertical: 10, borderRadius: 50, alignItems: "center", backgroundColor: recurrenceType === rt.value ? C.PRIMARY : C.BG }}
                         >
                           <Text style={{ fontSize: 14, fontWeight: "600", color: recurrenceType === rt.value ? "white" : C.SECONDARY }}>{rt.label}</Text>
                         </Pressable>
@@ -514,7 +514,7 @@ function EventModal({
                           <Pressable
                             key={idx}
                             onPress={() => toggleCustomDay(idx)}
-                            style={{ flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: "center", backgroundColor: customDays.includes(idx) ? C.PRIMARY : C.BG }}
+                            style={{ flex: 1, paddingVertical: 8, borderRadius: 50, alignItems: "center", backgroundColor: customDays.includes(idx) ? C.PRIMARY : C.BG }}
                           >
                             <Text style={{ fontSize: 12, fontWeight: "700", color: customDays.includes(idx) ? "white" : C.MUTED }}>{label}</Text>
                           </Pressable>
@@ -618,6 +618,7 @@ function CreateRoomModal({
         <Pressable style={styles.backdrop} onPress={onClose} />
         <View style={styles.sheet}>
           <ScrollView bounces={false} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.sheetContent}>
+            <View style={{ width: 40, height: 4, backgroundColor: C.BORDER, borderRadius: 2, alignSelf: "center", marginBottom: 20 }} />
             <Text style={{ fontSize: 22, fontWeight: "800", color: C.PRIMARY, marginBottom: 4 }}>Create a Room</Text>
             <Text style={{ fontSize: 14, color: C.SECONDARY, marginBottom: 20 }}>Members will use your room link to find your events.</Text>
 
@@ -685,19 +686,19 @@ function EventRow({
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
             <Text style={{ fontSize: 15, fontWeight: "700", color: C.PRIMARY }}>{event.title}</Text>
             {event.isRecurring && (
-              <View style={{ backgroundColor: "#EEF2FF", borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
-                <Text style={{ color: "#6366F1", fontSize: 11 }}>↺</Text>
+              <View style={{ backgroundColor: C.BG, borderRadius: 50, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: C.BORDER }}>
+                <Text style={{ color: PILL_ACCENT, fontSize: 11 }}>↺</Text>
               </View>
             )}
           </View>
           <Text style={{ fontSize: 12, color: C.MUTED, marginBottom: 2 }}>{formatDate(event.date)}</Text>
           {event.location ? <Text style={{ fontSize: 12, color: C.MUTED }}>{event.location}</Text> : null}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 }}>
-            <View style={{ backgroundColor: C.BG, borderRadius: 50, paddingHorizontal: 10, paddingVertical: 3 }}>
+            <View style={{ backgroundColor: C.BG, borderRadius: 50, paddingHorizontal: 10, paddingVertical: 3, borderWidth: 1, borderColor: C.BORDER }}>
               <Text style={{ fontSize: 12, fontWeight: "600", color: C.PRIMARY }}>{count} in</Text>
             </View>
             {category ? (
-              <View style={{ backgroundColor: C.BG, borderRadius: 50, paddingHorizontal: 10, paddingVertical: 3 }}>
+              <View style={{ backgroundColor: C.BG, borderRadius: 50, paddingHorizontal: 10, paddingVertical: 3, borderWidth: 1, borderColor: C.BORDER }}>
                 <Text style={{ fontSize: 12, fontWeight: "600", color: C.PRIMARY }}>{category}</Text>
               </View>
             ) : null}
@@ -734,7 +735,7 @@ function QrModal({
   onClose: () => void;
 }) {
   const eventUrl = `${APP_URL}/event/${eventId}`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(eventUrl)}&color=1C242B&bgcolor=EEEEFF`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(eventUrl)}&color=0F0F0F&bgcolor=F0EFFF`;
   return (
     <Modal visible animationType="fade" transparent statusBarTranslucent onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", alignItems: "center", justifyContent: "center" }}>
@@ -831,6 +832,7 @@ function ProfileModal({
         <Pressable style={styles.backdrop} onPress={onClose} />
         <View style={styles.sheet}>
           <ScrollView bounces={false} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.sheetContent}>
+            <View style={{ width: 40, height: 4, backgroundColor: C.BORDER, borderRadius: 2, alignSelf: "center", marginBottom: 20 }} />
             <Text style={{ fontSize: 22, fontWeight: "800", color: C.PRIMARY, marginBottom: 24 }}>My Profile</Text>
 
             <View style={{ alignItems: "center", marginBottom: 24 }}>
@@ -840,7 +842,7 @@ function ProfileModal({
                   width: 88,
                   height: 88,
                   borderRadius: 44,
-                  backgroundColor: "#1C242B",
+                  backgroundColor: C.PRIMARY,
                   alignItems: "center",
                   justifyContent: "center",
                   overflow: "hidden",
@@ -980,10 +982,9 @@ function RoomDetailView({
         <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: C.BORDER }}>
           <Pressable
             onPress={() => router.push("/")}
-            style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, flexDirection: "row", alignItems: "center", gap: 6, marginRight: 16 })}
+            style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, marginRight: 16 })}
           >
-            <Text style={{ fontSize: 18 }}>🏠</Text>
-            <Text style={{ fontSize: 13, fontWeight: "700", color: "#1C242B", fontStyle: "italic" }}>I'm IN</Text>
+            <Text style={{ fontSize: 15, fontWeight: "900", color: C.PRIMARY, fontStyle: "italic" }}>I'm IN</Text>
           </Pressable>
           <Pressable onPress={onBack} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, flexDirection: "row", alignItems: "center", gap: 4, marginRight: 12 })}>
             <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>← Rooms</Text>
@@ -1015,7 +1016,6 @@ function RoomDetailView({
               disabled={uploadingCover}
               style={({ pressed }) => ({ backgroundColor: C.BG, borderRadius: 14, paddingVertical: 16, alignItems: "center", gap: 6, opacity: pressed ? 0.7 : 1, flexDirection: "row", justifyContent: "center" })}
             >
-              <Text style={{ fontSize: 18 }}>🖼️</Text>
               <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>
                 {uploadingCover ? "Uploading…" : "Upload Cover Photo"}
               </Text>
@@ -1032,9 +1032,9 @@ function RoomDetailView({
             </View>
             <Pressable
               onPress={() => router.push(`/room/${room.slug}`)}
-              style={({ pressed }) => ({ backgroundColor: C.BG, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8, opacity: pressed ? 0.7 : 1 })}
+              style={({ pressed }) => ({ backgroundColor: C.BG, borderRadius: 50, paddingHorizontal: 14, paddingVertical: 8, opacity: pressed ? 0.7 : 1 })}
             >
-              <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>👁 Preview</Text>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>Preview</Text>
             </Pressable>
           </View>
 
@@ -1044,13 +1044,13 @@ function RoomDetailView({
             <View style={{ flexDirection: "row", gap: 8 }}>
               <Pressable
                 onPress={handleCopyRoomLink}
-                style={({ pressed }) => ({ flex: 1, backgroundColor: C.WHITE, borderRadius: 10, paddingVertical: 10, alignItems: "center", opacity: pressed ? 0.7 : 1, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 1 })}
+                style={({ pressed }) => ({ flex: 1, backgroundColor: C.WHITE, borderRadius: 50, paddingVertical: 10, alignItems: "center", opacity: pressed ? 0.7 : 1, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 1 })}
               >
                 <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY }}>{copied ? "Copied ✓" : "Copy Link"}</Text>
               </Pressable>
               <Pressable
                 onPress={handleShareRoom}
-                style={({ pressed }) => ({ flex: 1, backgroundColor: C.PRIMARY, borderRadius: 10, paddingVertical: 10, alignItems: "center", opacity: pressed ? 0.7 : 1 })}
+                style={({ pressed }) => ({ flex: 1, backgroundColor: C.PRIMARY, borderRadius: 50, paddingVertical: 10, alignItems: "center", opacity: pressed ? 0.7 : 1 })}
               >
                 <Text style={{ fontSize: 14, fontWeight: "600", color: "white" }}>Share</Text>
               </Pressable>
@@ -1071,18 +1071,17 @@ function RoomDetailView({
             <Text style={{ fontSize: 12, fontWeight: "600", color: C.SECONDARY, textTransform: "uppercase", letterSpacing: 0.8 }}>
               Events ({events.length})
             </Text>
-            <Pressable onPress={openCreate} style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
-              <Text style={{ fontSize: 15, fontWeight: "700", color: C.PRIMARY }}>+ New</Text>
+            <Pressable onPress={openCreate} style={({ pressed }) => ({ backgroundColor: C.PRIMARY, borderRadius: 50, paddingHorizontal: 12, paddingVertical: 6, opacity: pressed ? 0.7 : 1 })}>
+              <Text style={{ color: "white", fontWeight: "700", fontSize: 13 }}>+ New</Text>
             </Pressable>
           </View>
 
           {events.length === 0 ? (
             <Pressable
               onPress={openCreate}
-              style={({ pressed }) => ({ backgroundColor: C.BG, borderRadius: 16, padding: 20, marginBottom: 16, flexDirection: "row", alignItems: "center", opacity: pressed ? 0.8 : 1 })}
+              style={({ pressed }) => ({ backgroundColor: C.BG, borderRadius: 16, padding: 20, marginBottom: 16, alignItems: "center", opacity: pressed ? 0.8 : 1 })}
             >
-              <Text style={{ flex: 1, fontSize: 16, fontWeight: "700", color: C.PRIMARY }}>Create your first event →</Text>
-              <Text style={{ fontSize: 24 }}>📅</Text>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: C.PRIMARY }}>Create your first event →</Text>
             </Pressable>
           ) : (
             events.map((event) => (
@@ -1127,10 +1126,10 @@ function RoomDetailView({
             </View>
           ) : (
             announcements.map((ann) => (
-              <View key={ann.id} style={{ backgroundColor: "#FFFBEB", borderColor: "#FDE68A", borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8, flexDirection: "row", alignItems: "flex-start" }}>
+              <View key={ann.id} style={{ backgroundColor: "#FFFBEB", borderLeftWidth: 4, borderLeftColor: "#7C6FCD", borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8, flexDirection: "row", alignItems: "flex-start" }}>
                 <Text style={{ flex: 1, color: "#92400E", fontSize: 14, lineHeight: 20 }}>{ann.message}</Text>
                 <Pressable onPress={() => handleDeleteAnnouncement(ann.id)} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
-                  <Text style={{ color: "#B45309", marginLeft: 8, fontWeight: "700", fontSize: 16 }}>✕</Text>
+                  <Text style={{ color: C.MUTED, marginLeft: 8, fontWeight: "700", fontSize: 16 }}>✕</Text>
                 </Pressable>
               </View>
             ))
@@ -1188,12 +1187,12 @@ function RoomsListView({
     <>
       <ScrollView style={{ flex: 1, backgroundColor: C.WHITE }} contentContainerStyle={{ paddingBottom: 40 }}>
         {/* Header – 3 columns */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: "#F0F0F0" }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: C.BORDER }}>
           <Pressable onPress={() => router.push("/")} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>
-            <Text style={{ fontSize: 24, color: "#1C242B" }}>⌂</Text>
+            <Text style={{ fontSize: 15, fontWeight: "900", fontStyle: "italic", color: C.PRIMARY }}>I'm IN</Text>
           </Pressable>
 
-          <Text style={{ fontSize: 18, fontWeight: "900", fontStyle: "italic", color: "#1C242B" }}>I'm IN</Text>
+          <Text style={{ fontSize: 18, fontWeight: "900", fontStyle: "italic", color: C.PRIMARY }}>Dashboard</Text>
 
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <Pressable
@@ -1222,12 +1221,12 @@ function RoomsListView({
         </View>
 
         {/* Section title */}
-        <Text style={{ fontSize: 22, fontWeight: "700", color: C.PRIMARY, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 }}>My Rooms</Text>
+        <Text style={{ fontSize: 22, fontWeight: "900", fontStyle: "italic", color: C.PRIMARY, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 }}>My Rooms</Text>
 
         {rooms.length === 0 ? (
           <View style={{ alignItems: "center", paddingTop: 60, paddingHorizontal: 32 }}>
-            <Text style={{ fontSize: 52 }}>🏟️</Text>
-            <Text style={{ fontSize: 22, fontWeight: "800", color: C.PRIMARY, marginTop: 16 }}>Welcome to I'm IN</Text>
+            <Text style={{ fontSize: 72, fontWeight: "900", fontStyle: "italic", color: C.PLACEHOLDER_BG, marginBottom: 12 }}>BJJ</Text>
+            <Text style={{ fontSize: 22, fontWeight: "900", color: C.PRIMARY, marginTop: 0 }}>Welcome to I'm IN</Text>
             <Text style={{ fontSize: 15, color: C.SECONDARY, marginTop: 8, textAlign: "center", lineHeight: 22 }}>
               Create your first room to get started.{"\n"}Share the link with your members.
             </Text>
@@ -1265,8 +1264,8 @@ function RoomsListView({
                   <Pressable
                     onPress={() => onSelectRoom(room.id)}
                     style={({ pressed }) => ({
-                      backgroundColor: "#1C242B",
-                      borderRadius: 12,
+                      backgroundColor: C.PRIMARY,
+                      borderRadius: 50,
                       paddingVertical: 14,
                       alignItems: "center",
                       marginTop: 12,
@@ -1291,8 +1290,8 @@ function RoomsListView({
         <Pressable
           onPress={onCreateRoom}
           style={({ pressed }) => ({
-            backgroundColor: "#1C242B",
-            borderRadius: 16,
+            backgroundColor: C.PRIMARY,
+            borderRadius: 50,
             paddingVertical: 18,
             marginHorizontal: 16,
             marginTop: 8,

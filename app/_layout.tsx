@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
 import Head from "expo-router/head";
 import { APP_URL } from "@/constants/config";
+import { C } from "@/constants/design";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
@@ -18,7 +19,7 @@ function OfflineBanner() {
   return (
     <View
       style={{
-        backgroundColor: "#FF4217",
+        backgroundColor: C.ACCENT,
         paddingVertical: 6,
         alignItems: "center",
       }}
@@ -48,9 +49,9 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: "#FFFFFF" },
-          headerTitleStyle: { fontWeight: "700", fontSize: 17, color: "#1C242B" },
+          headerTitleStyle: { fontWeight: "700", fontSize: 17, color: C.PRIMARY },
           headerShadowVisible: false,
-          headerTintColor: "#1C242B",
+          headerTintColor: C.PRIMARY,
           headerTitleAlign: "center",
         }}
       >

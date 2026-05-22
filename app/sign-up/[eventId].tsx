@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { db } from "@/lib/db";
-import { C } from "@/constants/design";
+import { C, PILL_ACCENT } from "@/constants/design";
 import { id } from "@instantdb/react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -90,17 +90,19 @@ export default function SignUpScreen() {
 
           {done ? (
             <View style={{ alignItems: "center", paddingVertical: 32 }}>
-              <Text style={{ fontSize: 64, marginBottom: 16 }}>🎉</Text>
+              <Text style={{ fontSize: 52, fontWeight: "900", fontStyle: "italic", color: C.PRIMARY, marginBottom: 16 }}>
+                I'M IN
+              </Text>
               <Text style={{ fontSize: 28, fontWeight: "800", color: C.PRIMARY }}>
                 You're IN!
               </Text>
-              <Text style={{ fontSize: 16, color: C.SECONDARY, marginTop: 8 }}>
+              <Text style={{ fontSize: 16, color: PILL_ACCENT, marginTop: 8 }}>
                 See you there, {name.trim()}.
               </Text>
             </View>
           ) : (
             <>
-              <Text style={{ fontSize: 22, fontWeight: "800", color: C.PRIMARY, marginBottom: 6 }}>
+              <Text style={{ fontSize: 22, fontWeight: "900", color: C.PRIMARY, marginBottom: 6 }}>
                 Join this event
               </Text>
               <Text style={{ fontSize: 15, color: C.SECONDARY, marginBottom: 24 }}>
@@ -122,7 +124,7 @@ export default function SignUpScreen() {
               <TextInput
                 style={{
                   backgroundColor: C.INPUT,
-                  borderRadius: 14,
+                  borderRadius: 12,
                   paddingHorizontal: 16,
                   paddingVertical: 16,
                   fontSize: 16,

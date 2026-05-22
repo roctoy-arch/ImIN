@@ -64,20 +64,20 @@ function EventCard({ event }: { event: EventWithSignupsAndPhotos }) {
             <Image source={{ uri: coverUrl }} style={{ width: "100%", height: 160 }} contentFit="cover" />
           ) : null}
           {category ? (
-            <View style={{ position: "absolute", bottom: 10, left: 12, backgroundColor: C.BG, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 }}>
-              <Text style={{ fontSize: 12, fontWeight: "700", color: C.PRIMARY }}>{category}</Text>
+            <View style={{ position: "absolute", bottom: 10, left: 12, backgroundColor: C.BG, borderRadius: 50, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "rgba(255,255,255,0.4)" }}>
+              <Text style={{ fontSize: 12, fontWeight: "700", color: "white" }}>{category}</Text>
             </View>
           ) : null}
         </View>
         <View style={{ padding: 16 }}>
-          <Text style={{ fontSize: 18, fontWeight: "700", color: C.PRIMARY }} numberOfLines={2}>
+          <Text style={{ fontSize: 18, fontWeight: "800", color: C.PRIMARY }} numberOfLines={2}>
             {event.title}
           </Text>
           <Text style={{ fontSize: 13, color: C.SECONDARY, marginTop: 6 }}>
-            🕐 {formatDay(event.date)} · {formatTime(event.date)}
+            {formatDay(event.date)} · {formatTime(event.date)}
           </Text>
           {event.location ? (
-            <Text style={{ fontSize: 13, color: C.MUTED, marginTop: 2 }}>📍 {event.location}</Text>
+            <Text style={{ fontSize: 13, color: C.MUTED, marginTop: 2 }}>{event.location}</Text>
           ) : null}
           <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 12 }}>
             <View style={{ backgroundColor: C.PRIMARY, borderRadius: 50, paddingHorizontal: 12, paddingVertical: 4 }}>
@@ -108,23 +108,26 @@ function HomeTab({
   const [dismissed, setDismissed] = useState(false);
   const showBanner = !!announcement && !dismissed;
 
+  const announcementBanner = showBanner ? (
+    <View style={{ marginHorizontal: 16, marginTop: 12, backgroundColor: "#FFFBEB", borderLeftWidth: 4, borderLeftColor: "#7C6FCD", borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 12, flexDirection: "row", alignItems: "flex-start" }}>
+      <Text style={{ flex: 1, color: "#92400E", fontSize: 14, lineHeight: 20 }}>{announcement!.message}</Text>
+      <Pressable onPress={() => setDismissed(true)} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+        <Text style={{ color: C.MUTED, marginLeft: 8, fontWeight: "700", fontSize: 16 }}>✕</Text>
+      </Pressable>
+    </View>
+  ) : null;
+
   if (events.length === 0) {
     return (
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ flexGrow: 1, paddingBottom: bottomInset + 16, ...webStyle }}
       >
-        {showBanner && (
-          <View style={{ marginHorizontal: 16, marginTop: 12, backgroundColor: "#FFFBEB", borderColor: "#FDE68A", borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, flexDirection: "row", alignItems: "flex-start" }}>
-            <Text style={{ marginRight: 8, marginTop: 2 }}>📢</Text>
-            <Text style={{ flex: 1, color: "#92400E", fontSize: 14, lineHeight: 20 }}>{announcement!.message}</Text>
-            <Pressable onPress={() => setDismissed(true)} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
-              <Text style={{ color: "#B45309", marginLeft: 8, fontWeight: "700", fontSize: 16 }}>✕</Text>
-            </Pressable>
-          </View>
-        )}
+        {announcementBanner}
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 64, paddingHorizontal: 32 }}>
-          <Text style={{ fontSize: 52, marginBottom: 16 }}>🥋</Text>
+          <Text style={{ fontSize: 72, fontWeight: "900", fontStyle: "italic", color: C.PLACEHOLDER_BG, marginBottom: 12 }}>
+            BJJ
+          </Text>
           <Text style={{ fontSize: 20, fontWeight: "800", color: C.PRIMARY, textAlign: "center" }}>
             No events yet
           </Text>
@@ -144,17 +147,7 @@ function HomeTab({
       contentInsetAdjustmentBehavior="automatic"
       style={{ flex: 1 }}
       contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: bottomInset + 16, ...webStyle }}
-      ListHeaderComponent={
-        showBanner ? (
-          <View style={{ backgroundColor: "#FFFBEB", borderColor: "#FDE68A", borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 12, flexDirection: "row", alignItems: "flex-start" }}>
-            <Text style={{ marginRight: 8, marginTop: 2 }}>📢</Text>
-            <Text style={{ flex: 1, color: "#92400E", fontSize: 14, lineHeight: 20 }}>{announcement!.message}</Text>
-            <Pressable onPress={() => setDismissed(true)} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
-              <Text style={{ color: "#B45309", marginLeft: 8, fontWeight: "700", fontSize: 16 }}>✕</Text>
-            </Pressable>
-          </View>
-        ) : null
-      }
+      ListHeaderComponent={announcementBanner}
     />
   );
 }
@@ -165,7 +158,6 @@ export default function RoomScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const canGoBack = router.canGoBack();
 
   const { user } = db.useAuth();
 
@@ -243,16 +235,15 @@ export default function RoomScreen() {
       <Stack.Screen
         options={{
           headerTitle: () => (
-            <Text style={{ fontSize: 17, fontWeight: "700", color: "#1C242B" }}>{room.name}</Text>
+            <Text style={{ fontSize: 17, fontWeight: "700", color: C.PRIMARY }}>{room.name}</Text>
           ),
           headerLeft: () => (
             <Pressable
               onPress={() => router.push("/")}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, flexDirection: "row" as const, alignItems: "center" as const, gap: 6, paddingLeft: 4 })}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingLeft: 4 })}
             >
-              <Text style={{ fontSize: 18 }}>🏠</Text>
-              <Text style={{ fontSize: 13, fontWeight: "700", color: "#1C242B", fontStyle: "italic" as const }}>I'm IN</Text>
+              <Text style={{ fontSize: 15, fontWeight: "900", color: C.PRIMARY, fontStyle: "italic" as const }}>I'm IN</Text>
             </Pressable>
           ),
         }}
@@ -277,9 +268,9 @@ export default function RoomScreen() {
               position: "absolute",
               bottom: bottomInset + 24,
               right: 24,
-              width: 48,
-              height: 48,
-              borderRadius: 24,
+              borderRadius: 50,
+              paddingHorizontal: 20,
+              paddingVertical: 14,
               backgroundColor: C.PRIMARY,
               alignItems: "center",
               justifyContent: "center",
@@ -291,7 +282,7 @@ export default function RoomScreen() {
               elevation: 8,
             })}
           >
-            <Text style={{ color: "white", fontSize: 26, lineHeight: 30, fontWeight: "300" }}>+</Text>
+            <Text style={{ color: "white", fontWeight: "700", fontSize: 14 }}>+ Manage</Text>
           </Pressable>
         )}
       </View>

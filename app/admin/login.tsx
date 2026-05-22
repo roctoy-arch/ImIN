@@ -80,7 +80,7 @@ export default function AdminLoginScreen() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "white" }}>
-        <ActivityIndicator size="large" color="#0A0A0A" />
+        <ActivityIndicator size="large" color={C.PRIMARY} />
       </View>
     );
   }
@@ -98,10 +98,9 @@ export default function AdminLoginScreen() {
             <Pressable
               onPress={() => router.push("/")}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, flexDirection: "row" as const, alignItems: "center" as const, gap: 6, paddingLeft: 4 })}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingLeft: 4 })}
             >
-              <Text style={{ fontSize: 18 }}>🏠</Text>
-              <Text style={{ fontSize: 13, fontWeight: "700", color: "#1C242B", fontStyle: "italic" as const }}>I'm IN</Text>
+              <Text style={{ fontSize: 15, fontWeight: "900", color: C.PRIMARY, fontStyle: "italic" as const }}>I'm IN</Text>
             </Pressable>
           ),
         }}
@@ -121,10 +120,10 @@ export default function AdminLoginScreen() {
       ]}
     >
       <View style={{ flex: 1, paddingHorizontal: 24, justifyContent: "center" }}>
-        <Text style={{ fontSize: 28, fontWeight: "800", color: C.PRIMARY, marginBottom: 6 }}>
+        <Text style={{ fontSize: 28, fontWeight: "900", color: C.PRIMARY, marginBottom: 6 }}>
           {step === "email" ? "Admin Login" : "Enter Code"}
         </Text>
-        <Text style={{ fontSize: 15, color: "#6B7280", marginBottom: 32 }}>
+        <Text style={{ fontSize: 15, color: C.SECONDARY, marginBottom: 32 }}>
           {step === "email"
             ? "Enter your email to receive a login code."
             : `We sent a 6-digit code to ${email.trim()}.`}
@@ -132,7 +131,7 @@ export default function AdminLoginScreen() {
 
         {step === "email" ? (
           <>
-            <Text style={{ fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 }}>
+            <Text style={{ fontSize: 13, fontWeight: "600", color: C.PRIMARY, marginBottom: 6 }}>
               Email address
             </Text>
             <TextInput
@@ -169,7 +168,7 @@ export default function AdminLoginScreen() {
           </>
         ) : (
           <>
-            <Text style={{ fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 }}>
+            <Text style={{ fontSize: 13, fontWeight: "600", color: C.PRIMARY, marginBottom: 6 }}>
               6-digit code
             </Text>
             <TextInput
@@ -206,7 +205,7 @@ export default function AdminLoginScreen() {
               onPress={() => { setStep("email"); setCode(""); setVerifyError(""); }}
               style={{ alignItems: "center", paddingVertical: 12, marginTop: 4 }}
             >
-              <Text style={{ color: "#9CA3AF", fontSize: 15 }}>← Back</Text>
+              <Text style={{ color: C.MUTED, fontSize: 15 }}>← Back</Text>
             </Pressable>
           </>
         )}

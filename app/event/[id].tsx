@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { APP_URL } from "@/constants/config";
-import { C, CATEGORIES, SHADOW } from "@/constants/design";
+import { C, CATEGORIES, PILL_ACCENT, SHADOW } from "@/constants/design";
 import { AppSchema } from "@/instant.schema";
 import { InstaQLEntity, id } from "@instantdb/react-native";
 import * as ImagePicker from "expo-image-picker";
@@ -226,9 +226,11 @@ function EditEventModal({
                   onPress={() => setCategory(cat === category ? "" : cat)}
                   style={{
                     backgroundColor: category === cat ? C.PRIMARY : C.BG,
-                    borderRadius: 20,
+                    borderRadius: 50,
                     paddingHorizontal: 14,
                     paddingVertical: 8,
+                    borderWidth: 1,
+                    borderColor: category === cat ? C.PRIMARY : C.BORDER,
                   }}
                 >
                   <Text style={{ color: category === cat ? "white" : C.PRIMARY, fontSize: 13, fontWeight: "600" }}>
@@ -298,14 +300,14 @@ function MapPreviewCard({ location }: { location: string }) {
   const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${encoded}&zoom=15&size=600x200&maptype=mapnik&markers=${encoded},red`;
 
   const buttonRow = (
-    <View style={{ flexDirection: "row", borderTopWidth: 1, borderTopColor: "#DDD8FF" }}>
+    <View style={{ flexDirection: "row", borderTopWidth: 1, borderTopColor: C.BORDER }}>
       <Pressable
         onPress={() => Linking.openURL(`https://maps.google.com/?q=${encoded}`)}
         style={({ pressed }) => ({ flex: 1, paddingVertical: 14, alignItems: "center", opacity: pressed ? 0.7 : 1 })}
       >
         <Text style={{ fontSize: 14, fontWeight: "700", color: C.PRIMARY }}>Open in Maps</Text>
       </Pressable>
-      <View style={{ width: 1, backgroundColor: "#DDD8FF" }} />
+      <View style={{ width: 1, backgroundColor: C.BORDER }} />
       <Pressable
         onPress={() => Linking.openURL(`https://maps.google.com/dir/?api=1&destination=${encoded}`)}
         style={({ pressed }) => ({ flex: 1, paddingVertical: 14, alignItems: "center", opacity: pressed ? 0.7 : 1 })}
@@ -318,7 +320,7 @@ function MapPreviewCard({ location }: { location: string }) {
   if (Platform.OS === "web") {
     const IFrame = "iframe" as any;
     return (
-      <View style={{ backgroundColor: "#F0F0FF", borderRadius: 16, overflow: "hidden", marginTop: 4, marginBottom: 8 }}>
+      <View style={{ backgroundColor: C.BG, borderRadius: 16, overflow: "hidden", marginTop: 4, marginBottom: 8 }}>
         <IFrame
           src={mapSrc}
           width="100%"
@@ -332,7 +334,7 @@ function MapPreviewCard({ location }: { location: string }) {
   }
 
   return (
-    <View style={{ backgroundColor: "#F0F0FF", borderRadius: 16, overflow: "hidden", marginTop: 4, marginBottom: 8 }}>
+    <View style={{ backgroundColor: C.BG, borderRadius: 16, overflow: "hidden", marginTop: 4, marginBottom: 8 }}>
       {!mapError ? (
         <Image
           source={{ uri: mapUrl }}
@@ -341,8 +343,7 @@ function MapPreviewCard({ location }: { location: string }) {
           onError={() => setMapError(true)}
         />
       ) : (
-        <View style={{ height: 120, alignItems: "center", justifyContent: "center", paddingHorizontal: 20 }}>
-          <Text style={{ fontSize: 36, marginBottom: 8 }}>📍</Text>
+        <View style={{ height: 80, alignItems: "center", justifyContent: "center", paddingHorizontal: 20 }}>
           <Text style={{ fontSize: 14, fontWeight: "600", color: C.PRIMARY, textAlign: "center" }} numberOfLines={2}>
             {location}
           </Text>
@@ -520,16 +521,15 @@ export default function EventDetailScreen() {
       <Stack.Screen
         options={{
           headerTitle: () => (
-            <Text style={{ fontSize: 17, fontWeight: "700", color: "#1C242B" }}>{event.title}</Text>
+            <Text style={{ fontSize: 17, fontWeight: "700", color: C.PRIMARY }}>{event.title}</Text>
           ),
           headerLeft: () => (
             <Pressable
               onPress={() => router.push("/")}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, flexDirection: "row" as const, alignItems: "center" as const, gap: 6, paddingLeft: 4 })}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingLeft: 4 })}
             >
-              <Text style={{ fontSize: 18 }}>🏠</Text>
-              <Text style={{ fontSize: 13, fontWeight: "700", color: "#1C242B", fontStyle: "italic" as const }}>I'm IN</Text>
+              <Text style={{ fontSize: 15, fontWeight: "900", color: C.PRIMARY, fontStyle: "italic" as const }}>I'm IN</Text>
             </Pressable>
           ),
         }}
@@ -576,27 +576,29 @@ export default function EventDetailScreen() {
                 <View
                   style={{
                     backgroundColor: C.BG,
-                    borderRadius: 20,
+                    borderRadius: 50,
                     paddingHorizontal: 12,
                     paddingVertical: 5,
+                    borderWidth: 1,
+                    borderColor: C.BORDER,
                   }}
                 >
-                  <Text style={{ fontSize: 12, fontWeight: "700", color: C.PRIMARY }}>{category}</Text>
+                  <Text style={{ fontSize: 12, fontWeight: "700", color: PILL_ACCENT }}>{category}</Text>
                 </View>
               </View>
             ) : null}
 
             {/* Date + location */}
             <Text style={{ fontSize: 15, color: C.SECONDARY, marginBottom: 4 }}>
-              📅 {formatDate(event.date)}
+              {formatDate(event.date)}
             </Text>
             {event.location ? (
               <Pressable
                 onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(event.location)}`)}
                 style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
               >
-                <Text style={{ fontSize: 15, color: C.SECONDARY, marginBottom: 4 }}>
-                  📍 {event.location}
+                <Text style={{ fontSize: 15, color: C.SECONDARY, marginBottom: 4, textDecorationLine: "underline" }}>
+                  {event.location}
                 </Text>
               </Pressable>
             ) : null}
@@ -614,8 +616,8 @@ export default function EventDetailScreen() {
                   onPress={() => setShowEdit(true)}
                   style={({ pressed }) => ({
                     flex: 1,
-                    backgroundColor: C.INPUT,
-                    borderRadius: 16,
+                    backgroundColor: C.BG,
+                    borderRadius: 50,
                     paddingVertical: 14,
                     alignItems: "center",
                     transform: [{ scale: pressed ? 0.97 : 1 }],
@@ -628,7 +630,7 @@ export default function EventDetailScreen() {
                   style={({ pressed }) => ({
                     flex: 1,
                     backgroundColor: "#FEF2F2",
-                    borderRadius: 16,
+                    borderRadius: 50,
                     paddingVertical: 14,
                     alignItems: "center",
                     transform: [{ scale: pressed ? 0.97 : 1 }],
@@ -675,12 +677,12 @@ export default function EventDetailScreen() {
             )}
 
             {/* Share Event / QR Code */}
-            <View style={{ marginTop: 28, backgroundColor: C.BG, borderRadius: 20, padding: 20, alignItems: "center" }}>
-              <Text style={{ fontSize: 13, fontWeight: "700", color: C.PRIMARY, marginBottom: 16, letterSpacing: 0.8, textTransform: "uppercase" }}>
+            <View style={{ marginTop: 28, backgroundColor: C.BG, borderRadius: 20, padding: 16, alignItems: "center" }}>
+              <Text style={{ fontSize: 14, fontWeight: "800", color: C.PRIMARY, marginBottom: 12 }}>
                 Share Event
               </Text>
               <Image
-                source={{ uri: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`${APP_URL}/event/${eventId}`)}&color=1C242B&bgcolor=EEEEFF` }}
+                source={{ uri: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`${APP_URL}/event/${eventId}`)}&color=0F0F0F&bgcolor=F0EFFF` }}
                 style={{ width: 180, height: 180, borderRadius: 12 }}
                 contentFit="contain"
               />
@@ -697,7 +699,7 @@ export default function EventDetailScreen() {
 
             {/* Who's in */}
             <View style={{ marginTop: 32 }}>
-              <Text style={{ fontSize: 16, fontWeight: "700", color: C.PRIMARY, marginBottom: 12 }}>
+              <Text style={{ fontSize: 16, fontWeight: "800", fontStyle: "italic", color: C.PRIMARY, marginBottom: 12 }}>
                 Who's in ({signups.length})
               </Text>
               {signups.length === 0 ? (
@@ -735,7 +737,7 @@ export default function EventDetailScreen() {
             {/* Photo gallery */}
             <View style={{ marginTop: 32 }}>
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <Text style={{ fontSize: 16, fontWeight: "700", color: C.PRIMARY }}>
+                <Text style={{ fontSize: 16, fontWeight: "800", fontStyle: "italic", color: C.PRIMARY }}>
                   Photos ({photos.length})
                 </Text>
                 <Pressable
@@ -778,7 +780,7 @@ export default function EventDetailScreen() {
 
             {/* Comments */}
             <View style={{ marginTop: 32, marginBottom: 16 }}>
-              <Text style={{ fontSize: 16, fontWeight: "700", color: C.PRIMARY, marginBottom: 12 }}>
+              <Text style={{ fontSize: 16, fontWeight: "800", fontStyle: "italic", color: C.PRIMARY, marginBottom: 12 }}>
                 Comments ({comments.length})
               </Text>
 
@@ -822,7 +824,7 @@ export default function EventDetailScreen() {
               )}
 
               {/* Comment form */}
-              <View style={{ backgroundColor: C.WHITE, borderRadius: 16, padding: 16, marginTop: 8, ...SHADOW }}>
+              <View style={{ backgroundColor: C.BG, borderRadius: 16, padding: 16, marginTop: 8 }}>
                 <Text style={{ fontSize: 14, fontWeight: "700", color: C.PRIMARY, marginBottom: 12 }}>
                   Leave a comment
                 </Text>
